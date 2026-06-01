@@ -4,7 +4,9 @@
 <?php
 if (isset($_GET['uid'])) {
     $stmt = $pdo->prepare(
-        "UPDATE tbluser SET usrStatus=IF(usrStatus='Active','Inactive','Active') WHERE usrId=?"
+        "UPDATE tbluser
+         SET usrStatus = CASE WHEN usrStatus='Active' THEN 'Inactive' ELSE 'Active' END
+         WHERE usrId=?"
     );
     $stmt->execute([$_GET['uid']]);
     header('Location: ManageUser.php');

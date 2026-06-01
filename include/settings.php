@@ -7,24 +7,34 @@ function h(mixed $s): string {
     return htmlspecialchars((string)$s, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 }
 
-$dbHost = getenv('DB_HOST') ?: '127.0.0.1';
-$dbName = getenv('DB_NAME') ?: 'MyTutor';
-$dbUser = getenv('DB_USER') ?: 'root';
-$dbPass = getenv('DB_PASSWORD') ?: '';
+$dbDriver = getenv('DB_DRIVER') ?: 'sqlite';
 
 try {
-    $pdo = new PDO(
-        "mysql:host={$dbHost};dbname={$dbName};charset=utf8mb4",
-        $dbUser,
-        $dbPass,
-        [
+    if ($dbDriver === 'sqlite') {
+        $dbFile = getenv('DB_FILE') ?: __DIR__ . '/../database/mytutor.db';
+        $pdo = new PDO('sqlite:' . $dbFile, null, null, [
             PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_OBJ,
-            PDO::ATTR_EMULATE_PREPARES   => false,
-        ]
-    );
+        ]);
+        $pdo->exec('PRAGMA foreign_keys = ON');
+    } else {
+        $dbHost = getenv('DB_HOST') ?: '127.0.0.1';
+        $dbName = getenv('DB_NAME') ?: 'MyTutor';
+        $dbUser = getenv('DB_USER') ?: 'root';
+        $dbPass = getenv('DB_PASSWORD') ?: '';
+        $pdo = new PDO(
+            "mysql:host={$dbHost};dbname={$dbName};charset=utf8mb4",
+            $dbUser,
+            $dbPass,
+            [
+                PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_OBJ,
+                PDO::ATTR_EMULATE_PREPARES   => false,
+            ]
+        );
+    }
 } catch (PDOException $e) {
-    die('<p style="color:red">Database connection failed: '
+    die('<p style="color:red">Database error: '
         . htmlspecialchars($e->getMessage(), ENT_QUOTES, 'UTF-8') . '</p>');
 }
 

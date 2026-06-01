@@ -13,7 +13,7 @@ if (isset($_POST['smtSave']) || isset($_POST['smtSave_Add'])) {
     $stmt = $pdo->prepare(
         "INSERT INTO tbltutorial
          (tutorialTitle,tutorialDesc,categoryId,difficultyLevelId,tutorialPrerequisites,tutorialCreateDate,tutorialStatus,usrId)
-         VALUES (?,?,?,?,?,NOW(),?,?)"
+         VALUES (?,?,?,?,?,CURRENT_TIMESTAMP,?,?)"
     );
     $stmt->execute([$title, $desc, $catId, $lvlId, $prereq, $status, $_SESSION['userid']]);
 
