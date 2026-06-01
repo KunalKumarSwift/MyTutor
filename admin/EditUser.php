@@ -1,146 +1,137 @@
 <?php include "../include/header.php"; ?>
 <?php include "../include/topmenu.php"; ?>
-<?php //include "checksession.php";?>
+<?php include "checksession.php"; ?>
 <?php
-$r=$_GET['mid'];
-$query="select usrId,usrPwd,usrStatus,usrName,usrDOB,usrGender,usrEmail,usrAddress,usrMobile from tbluser where usrId='$r'";
-$result=  mysql_query($query) or die(mysql_error($con));
-$row = mysql_fetch_object($result); 
-    
-  
-if(isset($_POST['smtUpdate']))
-{
-    $query="update tbluser set 
-                    usrPwd='$_POST[txtPassword]',
-                    usrStatus='$_POST[Status]',
-                    usrName='$_POST[txtName]',
-                    usrDOB='$_POST[txtDOB]',
-                    usrGender='$_POST[Gender]',
-                    usrEmail='$_POST[txtEmail]',
-                    usrAddress='$_POST[txtAddress]',
-                    usrMobile='$_POST[txtMobile]' 
-                                                where usrId='$r'
-";
-$result=  mysql_query($query) or die(mysql_error($con));
-header('location:'.  baseurl().'admin/ManageUser.php');    
+$uid = $_GET['mid'] ?? '';
+$msg = '';
+
+$stmt = $pdo->prepare(
+    "SELECT usrId,usrStatus,usrName,usrDOB,usrGender,usrEmail,usrAddress,usrMobile FROM tbluser WHERE usrId=?"
+);
+$stmt->execute([$uid]);
+$row = $stmt->fetchObject();
+
+if (isset($_POST['smtUpdate'])) {
+    $pwd     = $_POST['txtPassword']         ?? '';
+    $confirm = $_POST['txtConfirm_Password'] ?? '';
+    $status  = $_POST['Status']              ?? 'Active';
+    $name    = trim($_POST['txtName']        ?? '');
+    $dob     = trim($_POST['txtDOB']         ?? '');
+    $gender  = $_POST['Gender']              ?? 'Male';
+    $email   = trim($_POST['txtEmail']       ?? '');
+    $address = trim($_POST['txtAddress']     ?? '');
+    $mobile  = trim($_POST['txtMobile']      ?? '');
+
+    if ($pwd !== '' && $pwd !== $confirm) {
+        $msg = 'Passwords do not match.';
+    } else {
+        if ($pwd !== '') {
+            $hash = password_hash($pwd, PASSWORD_BCRYPT);
+            $upd  = $pdo->prepare(
+                "UPDATE tbluser SET usrPwd=?,usrStatus=?,usrName=?,usrDOB=?,usrGender=?,
+                 usrEmail=?,usrAddress=?,usrMobile=? WHERE usrId=?"
+            );
+            $upd->execute([$hash, $status, $name, $dob, $gender, $email, $address, $mobile, $uid]);
+        } else {
+            $upd = $pdo->prepare(
+                "UPDATE tbluser SET usrStatus=?,usrName=?,usrDOB=?,usrGender=?,
+                 usrEmail=?,usrAddress=?,usrMobile=? WHERE usrId=?"
+            );
+            $upd->execute([$status, $name, $dob, $gender, $email, $address, $mobile, $uid]);
+        }
+        header('Location: ' . baseurl() . 'admin/ManageUser.php');
+        exit;
+    }
 }
-    
-    
-    
-    
-
-
 ?>
 <tr>
-            <td class="lineStyle">
-            </td>
-        </tr>
-        <tr>
-            <td valign="top">
-                <table border="0" cellpadding="0" cellspacing="0" width="100%" id="innerContainer">
-                    <tr>
-                        <td width="200px" valign="top">
-                            <br />
-                            <br />
-<?php include "../include/leftmenu.php"; ?>
- </td>
-                        <td valign="middle" width="700px">
-                           
-                             <div style="margin:0 auto;text-align: center;">
-                              <form id="frmEdit_User" method="post">
-            <table align="center">
-                <tr>
-                    <td colspan="3">
-                        <fieldset>
-                            <legend>
-                                Account Information
-                            </legend>
-                            <table>
+    <td class="lineStyle"></td>
+</tr>
+<tr>
+    <td valign="top">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" id="innerContainer">
+            <tr>
+                <td width="200px" valign="top"><br><br>
+                    <?php include "../include/leftmenu.php"; ?>
+                </td>
+                <td valign="middle" width="700px">
+                    <div style="margin:0 auto;text-align:center;">
+                        <form id="frmEdit_User" method="post">
+                            <table align="center">
                                 <tr>
-                                    <td><label id="lblUserId">User Id</label><span id="spnUserId" style="color:red">*</span></td>
-                                    <td colspan="4"><input type="text" id="txtUserId" name="txtUserId" value="<?php  echo $row->usrId;  ?>" ></td>
+                                    <td colspan="3">
+                                        <fieldset>
+                                            <legend>Account Information</legend>
+                                            <table>
+                                                <tr>
+                                                    <td>User Id</td>
+                                                    <td colspan="4"><?= h($row->usrId ?? '') ?></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>New Password</td>
+                                                    <td colspan="4"><input type="password" name="txtPassword" placeholder="Leave blank to keep current"></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Confirm Password</td>
+                                                    <td colspan="4"><input type="password" name="txtConfirm_Password"></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Status</td>
+                                                    <td><input type="radio" name="Status" value="Active" <?= (($row->usrStatus ?? '') === 'Active') ? 'checked' : '' ?>> Active</td>
+                                                    <td><input type="radio" name="Status" value="Inactive" <?= (($row->usrStatus ?? '') === 'Inactive') ? 'checked' : '' ?>> Inactive</td>
+                                                </tr>
+                                            </table>
+                                        </fieldset>
+                                    </td>
                                 </tr>
                                 <tr>
-                                    <td><label id="lblPassword">Password</label><span id="spnPassword" style="color:red">*</span></td>
-                                    <td colspan="4"><input type="text" id="txtPassword" name="txtPassword"></td>
+                                    <td colspan="3">
+                                        <fieldset>
+                                            <legend>Personal Information</legend>
+                                            <table>
+                                                <tr>
+                                                    <td>Name</td>
+                                                    <td colspan="4"><input type="text" name="txtName" value="<?= h($row->usrName ?? '') ?>"></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Date of Birth</td>
+                                                    <td colspan="4"><input type="text" name="txtDOB" value="<?= h($row->usrDOB ?? '') ?>"></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Gender</td>
+                                                    <td><input type="radio" name="Gender" value="Male" <?= (($row->usrGender ?? '') === 'Male') ? 'checked' : '' ?>> Male</td>
+                                                    <td><input type="radio" name="Gender" value="Female" <?= (($row->usrGender ?? '') === 'Female') ? 'checked' : '' ?>> Female</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Email</td>
+                                                    <td colspan="4"><input type="email" name="txtEmail" value="<?= h($row->usrEmail ?? '') ?>"></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Address</td>
+                                                    <td colspan="4"><input type="text" name="txtAddress" value="<?= h($row->usrAddress ?? '') ?>"></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Mobile</td>
+                                                    <td colspan="4"><input type="text" name="txtMobile" value="<?= h($row->usrMobile ?? '') ?>"></td>
+                                                </tr>
+                                            </table>
+                                        </fieldset>
+                                    </td>
                                 </tr>
                                 <tr>
-                                    <td><label id="lblConfirm_Password">Confirm Password</label><span id="spnConfirm_Password" style="color:red">*</span></td>
-                                    <td colspan="4"><input type="text" id="txtConfirm_Password" name="txtConfirm_Password"></td>
+                                    <td><input type="submit" name="smtUpdate" value="Update"></td>
+                                    <td><input type="reset" value="Reset"></td>
+                                    <td><input type="button" value="Cancel" onclick="history.back()"></td>
                                 </tr>
-                                <tr>
-                                    <td><label id="lblUser_Status">User Status</label></td>
-                                    <td><input type="radio" id="rbtnActive" name="Status" value="Active" <?php
-                                    echo isset($row->usrStatus)?($row->usrStatus=="Active"?'checked="true"':''):'checked="true"';
-                                    ?>></td>
-                                    <td><label id="Active">Active</label></td>
-                                    <td><input type="radio" id="rbtnInactive" name="Status" value="Inactive"
-                                               <?php
-                                    echo isset($row->usrStatus)?($row->usrStatus=="Inactive"?'checked="true"':''):'';
-                                    ?>></td>
-                                    <td><label id="Inactive">Inactive</label></td>
-                                </tr>
+                                <?php if ($msg): ?>
+                                    <tr><td colspan="3" style="color:red"><?= h($msg) ?></td></tr>
+                                <?php endif; ?>
                             </table>
-                        </fieldset>
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="3">
-                        <fieldset>
-                            <legend>Personal Information</legend>
-                            <table>
-                                <tr>
-                                    <td><label id="lblName">Name</label><span id="spnName" style="color:red">*</span></td>
-                                    <td colspan="4"><input type="text" id="txtName" name="txtName" value="<?php  echo $row->usrName;  ?>"></td>
-                                </tr>
-                                <tr>
-                                    <td><label id="lblDate_Of_Birth">Date of Birth</label><span id="spnDate_Of_Birth" style="color:red">*</span></td>
-                                    <td colspan="4"><input type="text" id="txtDOB" name="txtDOB" value="<?php  echo $row->usrDOB;  ?>"></td>
-                                </tr>
-                                <tr>
-                                    <td><label id="lblGender">Gender</label></td>
-                                    <td><input type="radio" id="rbtnMale" name="Gender" value="Male"
-                                               <?php
-                                    echo isset($row->usrGender)?($row->usrGender=="Male"?'checked="true"':''):'checked="true"';
-                                    ?>></td>
-                                    <td><label id="Male">Male</label></td>
-                                    <td><input type="radio" id="rbtnFemale" name="Gender" value="Female"
-                                               <?php
-                                    echo isset($row->usrGender)?($row->usrGender=="Female"?'checked="true"':''):'';
-                                    ?>></td>
-                                    <td><label id="Female">Female</label></td>
-                                </tr>
-                                <tr>
-                                    <td><label id="lblEmail">Email</label><span id="spnEmail" style="color:red">*</span></td>
-                                    <td colspan="4"><input type="text" id="txtEmail" name="txtEmail" value="<?php  echo $row->usrEmail;  ?>"></td>
-                                </tr>
-                                <tr>
-                                    <td><label id="lblAddress">Address</label></td>
-                                    <td colspan="4"><input type="text" id="txtAddress" name="txtAddress" value="<?php  echo $row->usrAddress;  ?>"></td>
-                                </tr>
-                                <tr>
-                                    <td><label id="lblMobile">Mobile</label><span id="spnMobile" style="color:red">*</span></td>
-                                    <td colspan="4"><input type="text" id="txtMobile" name="txtMobile" value="<?php  echo $row->usrMobile;  ?>"></td>
-                                </tr>
-                            </table>
-                        </fieldset>
-                    </td>
-                </tr>
-                <tr>
-                    <td><input type="submit" id="smtUpdate" name="smtUpdate" value="Update"></td>
-                    <td><input type="reset" id="smReset" name="smtReset" value="Reset"></td>
-                    <td><input type="button" id="btnCancel" name="smtCancel" value="Cancel"></td>
-                </tr>
-            </table>
-        </form>
-        
-
-                
-                            </div>
-                           
-                        </td>
-                    </tr>
-                </table>
-            </td>
-        </tr>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </td>
+</tr>
 <?php include "../include/footer.php"; ?>

@@ -1,249 +1,132 @@
 <?php include "../include/header.php"; ?>
 <?php include "../include/topmenu.php"; ?>
-<?php //include "checksession.php";?>
-
-
+<?php include "checksession.php"; ?>
 <?php
-$msg="";
-/*if(isset($_POST['smtSave_Add']))
-{
-$query="insert into tbluser (usrId,usrPwd,usrType,usrStatus,usrName,usrDOB,usrGender,usrEmail,usrAddress,usrMobile)
-                      values('$_POST[txtUserId]',
-                             '$_POST[txtPassword]',
-                             'Operator',
-                             '$_POST[Status]',
-                             '$_POST[txtName]',
-                             '$_POST[txtDOB]',
-                             '$_POST[Gender]',
-                             '$_POST[txtEmail]',
-                             '$_POST[txtAddress]',
-                             '$_POST[txtMobile]')";
-$result=mysql_query($query,$con) or die(mysql_error($con));
-$rr=mysql_affected_rows();
-if($rr>0)
-{
-    $msg="User Added Successfully.<br>Thank You!!";
+$msg = '';
+if (isset($_POST['smtSave']) || isset($_POST['smtSave_Add'])) {
+    $userId  = trim($_POST['txtUserId']          ?? '');
+    $pwd     = $_POST['txtPassword']              ?? '';
+    $confirm = $_POST['txtConfirm_Password']      ?? '';
+    $status  = $_POST['Status']                   ?? 'Active';
+    $name    = trim($_POST['txtName']             ?? '');
+    $dob     = trim($_POST['txtDOB']              ?? '');
+    $gender  = $_POST['Gender']                   ?? 'Male';
+    $email   = trim($_POST['txtEmail']            ?? '');
+    $address = trim($_POST['txtAddress']          ?? '');
+    $mobile  = trim($_POST['txtMobile']           ?? '');
+
+    if ($pwd !== $confirm) {
+        $msg = 'Passwords do not match.';
+    } else {
+        $chk = $pdo->prepare("SELECT COUNT(*) FROM tbluser WHERE usrId=?");
+        $chk->execute([$userId]);
+        if ((int)$chk->fetchColumn() > 0) {
+            $msg = 'User ID already exists.';
+        } else {
+            $hash = password_hash($pwd, PASSWORD_BCRYPT);
+            $ins  = $pdo->prepare(
+                "INSERT INTO tbluser (usrId,usrPwd,usrType,usrStatus,usrName,usrDOB,usrGender,usrEmail,usrAddress,usrMobile)
+                 VALUES (?,?,'Operator',?,?,?,?,?,?,?)"
+            );
+            $ins->execute([$userId, $hash, $status, $name, $dob, $gender, $email, $address, $mobile]);
+            if (isset($_POST['smtSave'])) {
+                header('Location: ' . baseurl() . 'admin/ManageUser.php');
+                exit;
+            }
+            $msg = 'User added successfully.';
+        }
+    }
 }
-}*/
-
-
-if(isset($_POST['smtSave']))
-{
- $query="select count(*) from tbluser where usrId='$_POST[txtUserId]'";
- $result=mysql_query($query,$con) or die(mysql_error($con));
- $counter=mysql_result($result,0,0);
- if($counter==0)
- {
-     $flag=0;
-                        $query="insert into tbluser (usrId,usrPwd,usrType,usrStatus,usrName,usrDOB,usrGender,usrEmail,usrAddress,usrMobile)
-                        values('$_POST[txtUserId]',
-                             '$_POST[txtPassword]',
-                             'Operator',
-                             '$_POST[Status]',
-                             '$_POST[txtName]',
-                             '$_POST[txtDOB]',
-                             '$_POST[Gender]',
-                             '$_POST[txtEmail]',
-                             '$_POST[txtAddress]',
-                             '$_POST[txtMobile]')";
-                        $result=mysql_query($query,$con) or die(mysql_error($con));
-                        $rr=mysql_affected_rows();
-                        if($rr>0)
-                    {
-                    $msg="User Added Successfully.<br>Thank You!!";
-                    }
- }
- else 
-{
-    $msg="User Already Exists.<br>";
-    $flag=1;
-    
-    
-}
-if($flag==0){
-header('location:'.baseurl().'admin/ManageUser.php');
-}
-
-}
-
-
-if(isset($_POST['smtSave_Add']))
-{
- $query="select count(*) from tbluser where usrId='$_POST[txtUserId]'";
- $result=mysql_query($query,$con) or die(mysql_error($con));
- $counter=mysql_result($result,0,0);
- if($counter==0)
- {
-     $flag=0;
-                        $query="insert into tbluser (usrId,usrPwd,usrType,usrStatus,usrName,usrDOB,usrGender,usrEmail,usrAddress,usrMobile)
-                        values('$_POST[txtUserId]',
-                             '$_POST[txtPassword]',
-                             'Operator',
-                             '$_POST[Status]',
-                             '$_POST[txtName]',
-                             '$_POST[txtDOB]',
-                             '$_POST[Gender]',
-                             '$_POST[txtEmail]',
-                             '$_POST[txtAddress]',
-                             '$_POST[txtMobile]')";
-                        $result=mysql_query($query,$con) or die(mysql_error($con));
-                        $rr=mysql_affected_rows();
-                        if($rr>0)
-                    {
-                    $msg="User Added Successfully.<br>Thank You!!";
-                    }
-                    
- }
- else 
-{
-    $msg="User Already Exists.<br>";
-    $flag=1;
-    
-    
-}
-
-
-}
-
 ?>
-
-
 <tr>
-            <td class="lineStyle">
-            </td>
-        </tr>
-        <tr>
-            <td valign="top">
-                <table border="0" cellpadding="0" cellspacing="0" width="100%" id="innerContainer">
-                    <tr>
-                        <td width="200px" valign="top">
-                            <br />
-                            <br />
-<?php include "../include/leftmenu.php"; ?>
- </td>
-                        <td valign="middle" width="700px">
-                           
-                             <div style="margin:0 auto;text-align: center;">
-                             
-                                 
-                    <form id="frmAdd_User" method="post" onsubmit="return check();">
-            <table align="center">
-                <tr>
-                    <td colspan="4">
-                        <fieldset>
-                            <legend>
-                                Account Information
-                            </legend>
-                            <table>
-                                <tr>
-                                    <td><label id="lblUserId">User Id</label><span id="spnUserId" style="color:red"></span></td>
-                                    <td colspan="4"><input type="text" id="txtUserId" name="txtUserId" value="<?php echo isset($_POST['txtUserId'])?$_POST['txtUserId']:"" ; ?>"></td>
-                                </tr>
-                                <tr>
-                                    <td><label id="lblPassword">Password</label><span id="spnPwd" style="color:red"></span></td>
-                                    <td colspan="4"><input type="text" id="txtPassword" name="txtPassword" value="<?php echo isset($_POST['txtPassword'])?$_POST['txtPassword']:"" ; ?>"></td>
-                                </tr>
-                                <tr>
-                                    <td><label id="lblConfirm_Password">Confirm Password</label><span id="spnConfirm_Pwd" style="color:red"></span></td>
-                                    <td colspan="4"><input type="text" id="txtConfirm_Password" name="txtConfirm_Password" value="<?php echo isset($_POST['txtConfirm_Password'])?$_POST['txtconfirm_Password']:"" ; ?>"></td>
-                                </tr>
-                                <tr>
-                                    <td><label id="lblUser_Status">User Status</label></td>
-                                    <td><input type="radio" checked="true" id="rbtnActive" name="Status" value="Active"
-                                               
-                                               <?php
-                                    echo isset($_POST['Status'])?($_POST['Status']=="Active"?'checked="true"':''):'checked="true"';
-                                    ?>
-                                               
-                                               ></td>
-                                    <td><label id="Active">Active</label></td>
-                                    <td><input type="radio" id="rbtnInactive" name="Status" value="Inactive"
-                                               
-                                               <?php
-                                    echo isset($_POST['Status'])?($_POST['Status']=="Inactive"?'checked="true"':''):'';
-                                    ?>
-                                               
-                                               ></td>
-                                    <td><label id="Inactive">Inactive</label></td>
-                                </tr>
-                            </table>
-                        </fieldset>
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="4">
-                        <fieldset>
-                            <legend>Personal Information</legend>
-                            <table>
-                                <tr>
-                                    <td><label id="lblName">Name</label><span id="spnName" style="color:red"></span></td>
-                                    <td colspan="4"><input type="text" id="txtName" name="txtName" value="<?php echo isset($_POST['txtName'])?$_POST['txtName']:"" ; ?>"></td>
-                                </tr>
-                                <tr>
-                                    <td><label id="lblDate_Of_Birth">Date of Birth</label><span id="spnDOB" style="color:red"></span></td>
-                                    <td colspan="4"><input type="text" id="txtDOB" name="txtDOB" value="<?php echo isset($_POST['txtDOB'])?$_POST['txtDOB']:"" ; ?>"></td>
-                                </tr>
-                                <tr>
-                                    <td><label id="lblGender">Gender</label></td>
-                                    <td><input type="radio" checked="true" id="rbtnMale" name="Gender" value="Male"
-                                               
-                                                <?php
-                                    echo isset($_POST['Gender'])?($_POST['Gender']=="Male"?'checked="true"':''):'checked="true"';
-                                    ?>
-                                               
-                                               ></td>
-                                    <td><label id="Male">Male</label></td>
-                                    <td><input type="radio" id="rbtnFemale" name="Gender" value="Female"
-                                               
-                                                <?php
-                                    echo isset($_POST['Gender'])?($_POST['Gender']=="Female"?'checked="true"':''):'';
-                                    ?>
-                                               
-                                               ></td>
-                                    <td><label id="Female">Female</label></td>
-                                </tr>
-                                <tr>
-                                    <td><label id="lblEmail">Email</label><span id="spnEmail" style="color:red"></span></td>
-                                    <td colspan="4"><input type="text" id="txtEmail" name="txtEmail" value="<?php echo isset($_POST['txtEmail'])?$_POST['txtEmail']:"" ; ?>"></td>
-                                </tr>
-                                <tr>
-                                    <td><label id="lblAddress">Address</label><span id="spnAddress" style="color:red"></span></td>
-                                    <td colspan="4"><input type="text" id="txtAddress" name="txtAddress" value="<?php echo isset($_POST['txtAddress'])?$_POST['txtAddress']:"" ; ?>"></td>
-                                </tr>
-                                <tr>
-                                    <td><label id="lblMobile">Mobile</label><span id="spnMobile" style="color:red"></span></td>
-                                    <td colspan="4"><input type="text" id="txtMobile" name="txtMobile" value="<?php echo isset($_POST['txtMobile'])?$_POST['txtMobile']:"" ; ?>"></td>
-                                </tr>
-                            </table>
-                        </fieldset>
-                    </td>
-                </tr>
-                <tr>
-                    <td><input type="submit" id="smtSave" name="smtSave" value="Save"></td>
-                    <td><input type="submit" id="smtSave_Add" name="smtSave_Add" value="Save & Add New"></td>
-                    <td><input type="reset" id="smtReset" name="smtReset" value="Reset"></td>
-                    <td><input type="button" id="btnCancel" name="smtCancel" value="Cancel"></td>
-                </tr>
-                <tr>
-                    <td>
-                <div id="divmsg" style="color:red">
-                    <?php echo $msg;?>
-                </div>
+    <td class="lineStyle"></td>
+</tr>
+<tr>
+    <td valign="top">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" id="innerContainer">
+            <tr>
+                <td width="200px" valign="top"><br><br>
+                    <?php include "../include/leftmenu.php"; ?>
                 </td>
-                </tr>
-                
-                
-            </table>
-        </form>
-                    
-                    
-                    
-                            </div>
-                           
-                        </td>
-                    </tr>
-                </table>
-            </td>
-        </tr>
-
-  <?php include_once "../include/footer.php"; ?>
+                <td valign="middle" width="700px">
+                    <div style="margin:0 auto;text-align:center;">
+                        <form id="frmAdd_User" method="post">
+                            <table align="center">
+                                <tr>
+                                    <td colspan="4">
+                                        <fieldset>
+                                            <legend>Account Information</legend>
+                                            <table>
+                                                <tr>
+                                                    <td>User Id <span style="color:red">*</span></td>
+                                                    <td colspan="4"><input type="text" name="txtUserId" value="<?= h($_POST['txtUserId'] ?? '') ?>"></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Password <span style="color:red">*</span></td>
+                                                    <td colspan="4"><input type="password" name="txtPassword"></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Confirm Password <span style="color:red">*</span></td>
+                                                    <td colspan="4"><input type="password" name="txtConfirm_Password"></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Status</td>
+                                                    <td><input type="radio" name="Status" value="Active" <?= (($_POST['Status'] ?? 'Active') === 'Active') ? 'checked' : '' ?>> Active</td>
+                                                    <td><input type="radio" name="Status" value="Inactive" <?= (($_POST['Status'] ?? '') === 'Inactive') ? 'checked' : '' ?>> Inactive</td>
+                                                </tr>
+                                            </table>
+                                        </fieldset>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="4">
+                                        <fieldset>
+                                            <legend>Personal Information</legend>
+                                            <table>
+                                                <tr>
+                                                    <td>Name <span style="color:red">*</span></td>
+                                                    <td colspan="4"><input type="text" name="txtName" value="<?= h($_POST['txtName'] ?? '') ?>"></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Date of Birth</td>
+                                                    <td colspan="4"><input type="text" name="txtDOB" value="<?= h($_POST['txtDOB'] ?? '') ?>"></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Gender</td>
+                                                    <td><input type="radio" name="Gender" value="Male" <?= (($_POST['Gender'] ?? 'Male') === 'Male') ? 'checked' : '' ?>> Male</td>
+                                                    <td><input type="radio" name="Gender" value="Female" <?= (($_POST['Gender'] ?? '') === 'Female') ? 'checked' : '' ?>> Female</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Email <span style="color:red">*</span></td>
+                                                    <td colspan="4"><input type="email" name="txtEmail" value="<?= h($_POST['txtEmail'] ?? '') ?>"></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Address</td>
+                                                    <td colspan="4"><input type="text" name="txtAddress" value="<?= h($_POST['txtAddress'] ?? '') ?>"></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Mobile <span style="color:red">*</span></td>
+                                                    <td colspan="4"><input type="text" name="txtMobile" value="<?= h($_POST['txtMobile'] ?? '') ?>"></td>
+                                                </tr>
+                                            </table>
+                                        </fieldset>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><input type="submit" name="smtSave" value="Save"></td>
+                                    <td><input type="submit" name="smtSave_Add" value="Save &amp; Add New"></td>
+                                    <td><input type="reset" value="Reset"></td>
+                                    <td><input type="button" value="Cancel" onclick="history.back()"></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="4"><div style="color:red"><?= h($msg) ?></div></td>
+                                </tr>
+                            </table>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </td>
+</tr>
+<?php include "../include/footer.php"; ?>
