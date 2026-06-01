@@ -1,177 +1,80 @@
 <?php include "../include/header.php"; ?>
 <?php include "../include/topmenu.php"; ?>
-<?php //include "checksession.php";?>
-
 <?php
-if(isset($_POST['smtSave']))
-{
-     $query="select count(*) from tblcategory where categoryTitle='$_POST[txtCategory]'";
-    $result=  mysql_query($query,$con) or die(mysql_error($con));
-    $counter=mysql_result($result,0,0);
-    if($counter==0)
-    
-    {
-    
+$msg = '';
+if (isset($_POST['smtSave']) || isset($_POST['smtSave_Add'])) {
+    $title  = trim($_POST['txtCategory']    ?? '');
+    $desc   = trim($_POST['txtDescprition'] ?? '');
+    $status = $_POST['kk'] ?? 'Active';
 
-                        $query="insert into tblcategory (categoryTitle,categoryDesc,categoryStatus)
-                        values ('$_POST[txtCategory]',
-                             '$_POST[txtDescprition]',
-                             '$_POST[kk]')";
-                             
-                        $result=mysql_query($query,$con) or die(mysql_error($con));
-                        $rr=mysql_affected_rows();
-                        if($rr>0)
-                    {
-                    $msg="Category Added Successfully.<br>Thank You!!";
-                    
-                    
-                        header('location:ManageCategory.php');
-                    
-                    }
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM tblcategory WHERE categoryTitle = ?");
+    $stmt->execute([$title]);
+    if ((int)$stmt->fetchColumn() > 0) {
+        $msg = 'Category already exists.';
+    } else {
+        $stmt = $pdo->prepare(
+            "INSERT INTO tblcategory (categoryTitle,categoryDesc,categoryStatus) VALUES (?,?,?)"
+        );
+        $stmt->execute([$title, $desc, $status]);
+        if (isset($_POST['smtSave'])) {
+            header('Location: ManageCategory.php');
+            exit;
+        }
+        $msg = 'Category added successfully.';
     }
- 
- else 
-{
-    $msg="Category already Exists.<br>";
-    
-    
-    
 }
-}
-
-
-if(isset($_POST['smtSave_Add']))
-{
-     $query="select count(*) from tblcategory where categoryTitle='$_POST[txtCategory]'";
-    $result=  mysql_query($query,$con) or die(mysql_error($con));
-    $counter=mysql_result($result,0,0);
-    if($counter==0)
-    
-    {
-    
-
-                        $query="insert into tblcategory (categoryTitle,categoryDesc,categoryStatus)
-                        values ('$_POST[txtCategory]',
-                             '$_POST[txtDescprition]',
-                             '$_POST[kk]')";
-                             
-                        $result=mysql_query($query,$con) or die(mysql_error($con));
-                        $rr=mysql_affected_rows();
-                        if($rr>0)
-                    {
-                    $msg="Category Added Successfully.<br>Thank You!!";
-                    }
-    }
- 
- else 
-{
-    $msg="Category already Exists.<br>";
-    
-    
-    
-}
-}
-
-
-
-
-
 ?>
-
-
-
 <tr>
-            <td class="lineStyle">
-            </td>
-        </tr>
-        <tr>
-            <td valign="top">
-                <table border="0" cellpadding="0" cellspacing="0" width="100%" id="innerContainer">
-                    <tr>
-                        <td width="200px" valign="top">
-                            <br />
-                            <br />
-<?php include "../include/leftmenu.php"; ?>
- </td>
-                        <td valign="middle" width="700px">
-                           
-                             <div style="margin:0 auto;text-align: center;">
-                    
-                                 
-           <form id="frmAdd_category" method="post">
-            <table align="center">
-                <tr>
-                    <td>
-                        <fieldset>
-                            <legend>Add Category</legend>
-                            <table>
-                                <tr>
-                                    <td><label id="lblCategory">Category</label></td>
-                                    <td colspan="3"><input type="text" id="txtCategory" name="txtCategory" value="<?php 
-                                                                    
-                                                            echo isset($_POST['txtCategory'])?$_POST['txtCategory']:"";
-                                    
-                                    ?>"></td>
-                                </tr>
-                                <tr>
-                                    <td><label id="lblDescription">Description</label></td>
-                                    <td colspan="3"><textarea rows="3" cols="20" name="txtDescprition"><?php 
-                                                                    
-                                                            echo isset($_POST['txtCategory'])?$_POST['txtCategory']:"";
-                                    
-                                    ?></textarea></td>
-                                </tr>
-                                <tr>
-                                    <td><label id="lblStatus">Status</label></td>
-                                    <td><input type="radio" id="rbtnActive" name="kk" checked="true" value="Active"
-                                               <?php
-                                    echo isset($_POST['kk'])?($_POST['kk']=="Active"?'checked="true"':''):'checked="true"';
-                                    ?>
-                                               
-                                               ><label id="Active">Active</label></td>
-                                 
-                                    <td><input type="radio" id="rbtnInactive" name="kk" value="Inactive"
-                                               
-                                               
-                                               <?php
-                                    echo isset($_POST['kk'])?($_POST['kk']=="Inactive"?'checked="true"':''):'';
-                                    ?>
-                                               
-                                               
-                                               ><label id="Inactive">Inactive</label></td>
-                                 
-                                </tr>
-                                <tr>
-                                    <td><input type="submit" id="smtSave" name="smtSave" value="Save"></td>
-                                    <td><input type="submit" id="smtSave_Add" name="smtSave_Add" value="Save & Add New"></td>
-                                    <td><input type="reset" id="smtReset" name="smtReset" value="Reset"></td>
-                                    <td><input type="button" id="smtCancel" name="smtCanncel" value="Cancel"></td>
-                                </tr>
+    <td class="lineStyle"></td>
+</tr>
+<tr>
+    <td valign="top">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" id="innerContainer">
+            <tr>
+                <td width="200px" valign="top"><br><br>
+                    <?php include "../include/leftmenu.php"; ?>
+                </td>
+                <td valign="middle" width="700px">
+                    <div style="margin:0 auto;text-align:center;">
+                        <form id="frmAdd_Category" method="post">
+                            <table align="center">
                                 <tr>
                                     <td>
-                                        <div id="divmsg" style="color:red">
-                                        <?php echo $msg; ?>    
-                                        </div>
+                                        <fieldset>
+                                            <legend>Add Category</legend>
+                                            <table>
+                                                <tr>
+                                                    <td>Category</td>
+                                                    <td colspan="3"><input type="text" name="txtCategory" value="<?= h($_POST['txtCategory'] ?? '') ?>"></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Description</td>
+                                                    <td colspan="3"><textarea rows="3" cols="20" name="txtDescprition"><?= h($_POST['txtDescprition'] ?? '') ?></textarea></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Status</td>
+                                                    <td><input type="radio" name="kk" value="Active" <?= (($_POST['kk'] ?? 'Active') === 'Active') ? 'checked' : '' ?>> Active</td>
+                                                    <td><input type="radio" name="kk" value="Inactive" <?= (($_POST['kk'] ?? '') === 'Inactive') ? 'checked' : '' ?>> Inactive</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><input type="submit" name="smtSave" value="Save"></td>
+                                                    <td><input type="submit" name="smtSave_Add" value="Save &amp; Add New"></td>
+                                                    <td><input type="reset" value="Reset"></td>
+                                                    <td><input type="button" value="Cancel" onclick="history.back()"></td>
+                                                </tr>
+                                                <tr>
+                                                    <td colspan="4"><div style="color:red"><?= h($msg) ?></div></td>
+                                                </tr>
+                                            </table>
+                                        </fieldset>
                                     </td>
                                 </tr>
                             </table>
-                        </fieldset>
-                    </td>
-                </tr>
-            </table>
-        </form>
-                                 
-                                 
-                                 
-                                 
-                                 
-                                 
-                    
-                            </div>
-                           
-                        </td>
-                    </tr>
-                </table>
-            </td>
-        </tr>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </td>
+</tr>
 <?php include "../include/footer.php"; ?>
