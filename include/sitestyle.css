@@ -1,0 +1,207 @@
+﻿body
+{
+    font-size: 75%;
+    color: #222;
+    background: #ffffff;
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: #ffffff;
+    margin: 0 auto;
+    padding: 0 auto;
+}
+#outerContainer
+{
+    margin: 0 auto;
+    width: 900px;
+}
+#headerOuter
+{
+    min-height: 70px;
+    max-height: 70px;
+    height: 70px;
+}
+#headerContainer
+{
+    min-height: 70px;
+    max-height: 70px;
+    height: 70px;
+}
+#headerWebsiteLabelLeft
+{
+    color: #cc3300;
+    padding-left: 10px;
+}
+#headerWebsiteLabelRight
+{
+    color: #0099cc;
+}
+/***********/
+ul#sitenav, ul#sitenav li
+{
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+		
+ul#sitenav
+{
+    display: block;
+    padding: 0px;
+    float: right;
+    
+}
+ul#sitenav li
+{
+    float:left;
+    margin-left:5px;
+    background: #0099cc;
+}
+ul#sitenav li a
+{
+    display: block;
+    padding: 0 7px;
+    line-height: 25px;
+    text-decoration: none;
+    color: #ffffff;
+    font-family: Arial;
+    font-size: 12px;
+    font-weight: bold;
+}
+				
+ul#sitenav li a:hover
+{
+    background: #cc3300;
+}
+		
+ul#sitenav li a.active
+{
+    font-weight: bold;
+    color: #fff;
+}
+
+.clearfix:after
+{
+    content: ".";
+    display: block;
+    height: 0;
+    clear: both;
+    visibility: hidden;
+}
+.clearfix
+{
+    display: inline-block;
+}
+* html .clearfix, * html .container
+{
+    height: 1%;
+}
+.clearfix
+{
+    display: block;
+}
+/**********/
+
+a:focus, a:hover
+{
+    color: #26a8d4;
+    text-decoration: none;
+}
+a
+{
+    color: #cc3300;
+    text-decoration: none;
+}
+/*******/
+ul#leftpane, ul#leftpane li
+{
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+ul#leftpane li
+{
+    border-top: 1px dashed #cccccc;
+}
+	
+ul#leftpane
+{
+    display: block;
+    background: #ffffff;
+    padding: 0 10px;
+}
+ul#leftpane li a
+{
+    display: block;
+    padding: 0 7px;
+    line-height: 25px;
+    text-decoration: none;
+    color: #cc3300;
+}
+				
+ul#leftpane li a:hover
+{
+    background: #fbfbfb;
+    position: relative;
+    top: 0px;
+    left: 5px;
+    color: #26a8d4;
+}
+
+ul#leftpane li:hover
+{
+    background: #fbfbfb;
+    color: #26a8d4;
+}
+
+ul#leftpane li a.active
+{
+    background: #ffffff;
+    font-weight: bold;
+    color: #fff;
+}
+/******/
+.lineStyle
+{
+    min-height: 5px;
+    max-height: 5px;
+    height: 5px;
+    background-color: #0099cc;
+}
+/**********/
+#innerContainer
+{
+    min-height: 400px;
+    height: 400px;
+}
+
+.tblStyle, .tblStyle th, .tblStyle td
+{
+    border: 1px solid #909090;
+    border-collapse: collapse;
+}
+.tblStyle th
+{
+    background-color:#f0f0f0;
+}
+
+/***********/
+.btnSourceView
+{
+    background-image: url(../images/SourceIcon.png);
+    background-position: left center;
+    background-repeat: no-repeat;
+    border: 1px solid #afafaf;
+}
+.btnDesignView
+{
+    background-image: url(../images/DesignIcon.png);
+    background-position: left center;
+    background-repeat: no-repeat;
+    border: 1px solid #afafaf;
+}
+
+form
+{
+    margin: 0px;
+    padding: 0px;
+}
