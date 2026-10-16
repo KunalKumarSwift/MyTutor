@@ -42,7 +42,10 @@ test.describe('tutorial management', () => {
     // Published → visible publicly.
     await page.goto('/tutorials?search=' + encodeURIComponent(title));
     await page.getByRole('link', { name: title, exact: true }).click();
-    await expect(page.getByText('Second paragraph.')).toBeVisible();
+    // Wait for the detail page itself: the catalogue card excerpt also contains this text.
+    await expect(page).toHaveURL(/\/tutorials\/\d+$/);
+    await expect(page.getByRole('heading', { level: 1, name: title })).toBeVisible();
+    await expect(page.getByText('Second paragraph.', { exact: true })).toBeVisible();
     const publicUrl = page.url();
 
     // Update: rename and unpublish.
