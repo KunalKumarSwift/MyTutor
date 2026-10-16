@@ -1,0 +1,134 @@
+@import '@fontsource-variable/manrope';
+@import 'tailwindcss';
+
+/*
+ * Design tokens. Components use these via Tailwind utilities (bg-surface, text-ink-muted, …);
+ * do not hard-code colours or spacing in components.
+ * Palette nods to the legacy "Online Tutorial" header (blue #0099cc / orange #cc3300),
+ * darkened to meet WCAG AA contrast.
+ */
+@theme {
+  --font-sans:
+    'Manrope Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  --color-brand-50: #eef8fc;
+  --color-brand-100: #d5eef8;
+  --color-brand-200: #a9dcf0;
+  --color-brand-500: #0b7fab;
+  --color-brand-600: #0b6d93;
+  --color-brand-700: #0b5f86;
+  --color-brand-800: #0c4a68;
+  --color-brand-900: #0b3349;
+
+  --color-accent-100: #fde8de;
+  --color-accent-500: #d9480f;
+  --color-accent-600: #c2410c;
+  --color-accent-700: #9a3412;
+
+  --color-ink: #0f1d2b;
+  --color-ink-muted: #4a5a6a;
+  --color-ink-subtle: #64748b;
+  --color-canvas: #f6f8fb;
+  --color-surface: #ffffff;
+  --color-surface-raised: #ffffff;
+  --color-line: #e2e8f0;
+  --color-line-strong: #cbd5e1;
+
+  --color-success-50: #ecfdf3;
+  --color-success-700: #15803d;
+  --color-danger-50: #fef2f2;
+  --color-danger-600: #dc2626;
+  --color-danger-700: #b91c1c;
+  --color-warning-50: #fffbeb;
+  --color-warning-700: #b45309;
+
+  --radius-card: 1rem;
+  --radius-control: 0.625rem;
+
+  --shadow-card: 0 1px 2px rgb(15 29 43 / 0.04), 0 4px 16px -4px rgb(15 29 43 / 0.08);
+  --shadow-card-hover: 0 2px 4px rgb(15 29 43 / 0.05), 0 16px 32px -12px rgb(15 29 43 / 0.18);
+  --shadow-overlay: 0 24px 64px -16px rgb(15 29 43 / 0.35);
+
+  --container-page: 76rem;
+  --container-prose: 46rem;
+
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-fast: 150ms;
+  --duration-base: 240ms;
+  --duration-reveal: 560ms;
+
+  --animate-rise-in: rise-in var(--duration-reveal) var(--ease-out-soft) both;
+  @keyframes rise-in {
+    from {
+      opacity: 0;
+      transform: translate3d(0, 14px, 0);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-canvas text-ink font-sans antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  :focus-visible {
+    outline: 3px solid var(--color-brand-500);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+  ::selection {
+    background: var(--color-brand-200);
+  }
+}
+
+@layer components {
+  /* Skip link for keyboard users. */
+  .skip-link {
+    @apply sr-only;
+  }
+  .skip-link:focus {
+    @apply not-sr-only fixed top-3 left-3 z-50 rounded-lg bg-ink px-4 py-2 text-sm font-semibold text-white;
+  }
+}
+
+/*
+ * Scroll reveal: elements are only hidden when the user allows motion AND the observer
+ * has armed them (data-reveal="armed"). Without JS, or with reduced motion, content is
+ * always visible.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  [data-reveal='armed'] {
+    opacity: 0;
+    transform: translate3d(0, 18px, 0);
+  }
+  [data-reveal='visible'] {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity var(--duration-reveal) var(--ease-out-soft),
+      transform var(--duration-reveal) var(--ease-out-soft);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+  .parallax-layer {
+    will-change: transform;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
