@@ -10,4 +10,4 @@ test-results/
 blob-report/
 .DS_Store
 *.log
-src/generated/
+apps/api/src/generated/
