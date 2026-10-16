@@ -2,7 +2,7 @@ import { Type } from '@sinclair/typebox';
 import { actorOf } from '../../plugins/auth.plugin.js';
 import type { RoutePlugin } from '../../routes/types.js';
 import { errorResponses, noContent, SessionSchema } from '../../shared/http/dto-schemas.js';
-import { DataEnvelope } from '../../shared/http/schemas.js';
+import { DataEnvelope, Nullable } from '../../shared/http/schemas.js';
 import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from '../../shared/security/password-hasher.js';
 import { AppError } from '../../shared/errors/app-error.js';
 import { toPrincipalDto } from '../users/user.mapper.js';
@@ -73,6 +73,26 @@ export const authRoutes: RoutePlugin = async (app, { config, container }) => {
         data: {
           user: toPrincipalDto({ id: actor.userId, username: actor.username, name: actor.name, role: actor.role }),
           csrfToken: container.auth.csrfTokenFor(request.sessionToken!),
+        },
+      };
+    },
+  );
+
+  // Non-failing variant for clients that just need to know whether anyone is signed in.
+  app.get(
+    '/auth/session',
+    { schema: { response: { 200: DataEnvelope(Nullable(SessionSchema)) } } },
+    async (request, reply) => {
+      reply.header('cache-control', 'no-store');
+      const actor = request.actor;
+      if (!actor || !request.sessionToken) {
+        if (request.sessionToken) app.clearSessionCookie(reply);
+        return { data: null };
+      }
+      return {
+        data: {
+          user: toPrincipalDto({ id: actor.userId, username: actor.username, name: actor.name, role: actor.role }),
+          csrfToken: container.auth.csrfTokenFor(request.sessionToken),
         },
       };
     },

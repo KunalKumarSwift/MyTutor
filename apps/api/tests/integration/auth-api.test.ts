@@ -39,6 +39,18 @@ describe('Authentication & authorization API', () => {
     expect(me.json().data).toMatchObject({ user: { username: 'admin' }, csrfToken: session.csrf });
   });
 
+  it('reports the current session without failing when signed out', async () => {
+    const anonymous = await ctx.app.inject({ method: 'GET', url: '/api/v1/auth/session' });
+    expect(anonymous.statusCode).toBe(200);
+    expect(anonymous.json()).toEqual({ data: null });
+    const s = await login(ctx.app, 'operator');
+    const signedIn = await ctx.app.inject({ method: 'GET', url: '/api/v1/auth/session', headers: { cookie: s.cookie } });
+    expect(signedIn.json().data).toMatchObject({ user: { username: 'operator', role: 'OPERATOR' }, csrfToken: s.csrf });
+    const stale = await ctx.app.inject({ method: 'GET', url: '/api/v1/auth/session', headers: { cookie: 'mytutor_session=bogus' } });
+    expect(stale.json()).toEqual({ data: null });
+    expect(String(stale.headers['set-cookie'])).toMatch(/mytutor_session=;/);
+  });
+
   it('stores only a hash of the session token', async () => {
     const session = await login(ctx.app, 'admin');
     const token = session.cookie.split('=')[1]!;
