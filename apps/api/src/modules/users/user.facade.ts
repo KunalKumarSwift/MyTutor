@@ -87,19 +87,20 @@ export class UserFacade {
       throw invalid([{ field: 'status', message: 'You cannot deactivate your own account.' }]);
     }
 
+    const previousStatus = existing.status;
     const patch: UserPatch = cleanProfilePatch(input);
     if (input.status !== undefined) patch.status = input.status;
     if (input.password !== undefined) patch.passwordHash = await this.hasher.hash(input.password);
 
     const updated = await this.users.update(id, patch);
     const credentialsChanged = input.password !== undefined;
-    const deactivated = existing.status === 'ACTIVE' && updated.status === 'INACTIVE';
+    const deactivated = previousStatus === 'ACTIVE' && updated.status === 'INACTIVE';
     if (credentialsChanged || deactivated) {
       await this.sessions.deleteForUser(id, id === actor.userId ? actor.sessionId : undefined);
     }
 
     const changes = [
-      deactivated ? 'deactivated' : existing.status !== updated.status ? 'activated' : null,
+      deactivated ? 'deactivated' : previousStatus !== updated.status ? 'activated' : null,
       credentialsChanged ? 'password reset' : null,
     ].filter(Boolean);
     await this.audit.record({
