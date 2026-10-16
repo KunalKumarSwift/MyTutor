@@ -32,10 +32,21 @@ describe('TutorialFacade', () => {
     levels.seed('Expert', 'INACTIVE');
     tutorials = new InMemoryTutorialRepository(categories, levels, users);
     audit = new InMemoryAuditRepository();
-    facade = new TutorialFacade(tutorials, categories, levels, new AuthorizationPolicy(), new RepositoryAuditLogger(audit, silentLogger));
+    facade = new TutorialFacade(
+      tutorials,
+      categories,
+      levels,
+      new AuthorizationPolicy(),
+      new RepositoryAuditLogger(audit, silentLogger),
+    );
   });
 
-  const valid = { title: '  Intro   to HTML ', description: 'Body\r\n\r\nMore', categoryId: 1, difficultyLevelId: 1 };
+  const valid = {
+    title: '  Intro   to HTML ',
+    description: 'Body\r\n\r\nMore',
+    categoryId: 1,
+    difficultyLevelId: 1,
+  };
 
   it('creates a tutorial with cleaned text, the actor as author, and an audit entry', async () => {
     const created = await facade.createTutorial({ ...valid, prerequisites: '   ' }, operator);
@@ -46,11 +57,15 @@ describe('TutorialFacade', () => {
       status: 'ACTIVE',
       author: { id: 2 },
     });
-    expect(audit.events).toEqual([expect.objectContaining({ action: 'tutorial.created', actorId: 2 })]);
+    expect(audit.events).toEqual([
+      expect.objectContaining({ action: 'tutorial.created', actorId: 2 }),
+    ]);
   });
 
   it('rejects unknown and inactive references with field-level details', async () => {
-    await expect(facade.createTutorial({ ...valid, categoryId: 99, difficultyLevelId: 2 }, admin)).rejects.toMatchObject({
+    await expect(
+      facade.createTutorial({ ...valid, categoryId: 99, difficultyLevelId: 2 }, admin),
+    ).rejects.toMatchObject({
       statusCode: 422,
       details: [
         { field: 'categoryId', message: 'Selected category does not exist.' },
@@ -63,24 +78,42 @@ describe('TutorialFacade', () => {
   it('allows keeping an existing reference that has since become inactive', async () => {
     const created = await facade.createTutorial(valid, admin);
     categories.records[0]!.status = 'INACTIVE';
-    const updated = await facade.updateTutorial(created.id, { title: 'Renamed', categoryId: 1 }, admin);
+    const updated = await facade.updateTutorial(
+      created.id,
+      { title: 'Renamed', categoryId: 1 },
+      admin,
+    );
     expect(updated.title).toBe('Renamed');
-    await expect(facade.updateTutorial(created.id, { categoryId: 2 }, admin)).rejects.toMatchObject({ statusCode: 422 });
+    await expect(facade.updateTutorial(created.id, { categoryId: 2 }, admin)).rejects.toMatchObject(
+      { statusCode: 422 },
+    );
   });
 
   it('does not erase omitted fields on partial update', async () => {
     const created = await facade.createTutorial({ ...valid, prerequisites: 'HTML' }, admin);
     const updated = await facade.updateTutorial(created.id, { status: 'INACTIVE' }, admin);
-    expect(updated).toMatchObject({ prerequisites: 'HTML', title: 'Intro to HTML', status: 'INACTIVE' });
+    expect(updated).toMatchObject({
+      prerequisites: 'HTML',
+      title: 'Intro to HTML',
+      status: 'INACTIVE',
+    });
     const cleared = await facade.updateTutorial(created.id, { prerequisites: null }, admin);
     expect(cleared.prerequisites).toBeNull();
   });
 
   it('detects concurrent edits with expectedUpdatedAt', async () => {
     const created = await facade.createTutorial(valid, admin);
-    await facade.updateTutorial(created.id, { title: 'First', expectedUpdatedAt: created.updatedAt }, admin);
+    await facade.updateTutorial(
+      created.id,
+      { title: 'First', expectedUpdatedAt: created.updatedAt },
+      admin,
+    );
     await expect(
-      facade.updateTutorial(created.id, { title: 'Second', expectedUpdatedAt: created.updatedAt }, admin),
+      facade.updateTutorial(
+        created.id,
+        { title: 'Second', expectedUpdatedAt: created.updatedAt },
+        admin,
+      ),
     ).rejects.toMatchObject({ code: 'STALE_RECORD', statusCode: 409 });
   });
 
@@ -96,7 +129,9 @@ describe('TutorialFacade', () => {
   });
 
   it('returns 404 when updating or deleting a missing tutorial', async () => {
-    await expect(facade.updateTutorial(42, { title: 'x' }, admin)).rejects.toMatchObject({ statusCode: 404 });
+    await expect(facade.updateTutorial(42, { title: 'x' }, admin)).rejects.toMatchObject({
+      statusCode: 404,
+    });
     await expect(facade.deleteTutorial(42, admin)).rejects.toMatchObject({ statusCode: 404 });
   });
 

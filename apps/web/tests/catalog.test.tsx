@@ -5,14 +5,22 @@ import CatalogPage from '../src/features/tutorials/CatalogPage';
 import { mockApi, page, renderRoutes, tutorialSummary } from './test-utils';
 
 const reference = (url: URL) => {
-  if (url.pathname === '/api/v1/categories') return { body: { data: [{ id: 1, title: 'Databases', description: null, tutorialCount: 2 }] } };
-  if (url.pathname === '/api/v1/difficulty-levels') return { body: { data: [{ id: 1, title: 'Beginner', description: null, sortOrder: 1 }] } };
+  if (url.pathname === '/api/v1/categories')
+    return { body: { data: [{ id: 1, title: 'Databases', description: null, tutorialCount: 2 }] } };
+  if (url.pathname === '/api/v1/difficulty-levels')
+    return { body: { data: [{ id: 1, title: 'Beginner', description: null, sortOrder: 1 }] } };
   return undefined;
 };
 
 describe('CatalogPage', () => {
   it('renders tutorials from the API as accessible links', async () => {
-    mockApi((url) => reference(url) ?? (url.pathname === '/api/v1/tutorials' ? { body: page([tutorialSummary(1, 'Joins Explained'), tutorialSummary(2, 'Indexes')]) } : undefined));
+    mockApi(
+      (url) =>
+        reference(url) ??
+        (url.pathname === '/api/v1/tutorials'
+          ? { body: page([tutorialSummary(1, 'Joins Explained'), tutorialSummary(2, 'Indexes')]) }
+          : undefined),
+    );
     renderRoutes([{ path: '/tutorials', Component: CatalogPage }], ['/tutorials']);
 
     const link = await screen.findByRole('link', { name: 'Joins Explained' });
@@ -22,20 +30,39 @@ describe('CatalogPage', () => {
   });
 
   it('applies the category filter through the URL and requests filtered data', async () => {
-    const { calls } = mockApi((url) => reference(url) ?? (url.pathname === '/api/v1/tutorials' ? { body: page([tutorialSummary(1, 'Joins Explained')]) } : undefined));
-    const { router } = renderRoutes([{ path: '/tutorials', Component: CatalogPage }], ['/tutorials']);
+    const { calls } = mockApi(
+      (url) =>
+        reference(url) ??
+        (url.pathname === '/api/v1/tutorials'
+          ? { body: page([tutorialSummary(1, 'Joins Explained')]) }
+          : undefined),
+    );
+    const { router } = renderRoutes(
+      [{ path: '/tutorials', Component: CatalogPage }],
+      ['/tutorials'],
+    );
     await screen.findByRole('link', { name: 'Joins Explained' });
 
     await screen.findByRole('option', { name: 'Databases' });
     await userEvent.selectOptions(screen.getByLabelText('Category'), '1');
 
     await waitFor(() => expect(router.state.location.search).toBe('?category=1'));
-    await waitFor(() => expect(calls.some((c) => c.url.pathname === '/api/v1/tutorials' && c.url.searchParams.get('categoryId') === '1')).toBe(true));
+    await waitFor(() =>
+      expect(
+        calls.some(
+          (c) =>
+            c.url.pathname === '/api/v1/tutorials' && c.url.searchParams.get('categoryId') === '1',
+        ),
+      ).toBe(true),
+    );
     expect(screen.getByRole('button', { name: /clear filters/i })).toBeInTheDocument();
   });
 
   it('shows an empty state with a way out when nothing matches', async () => {
-    mockApi((url) => reference(url) ?? (url.pathname === '/api/v1/tutorials' ? { body: page([]) } : undefined));
+    mockApi(
+      (url) =>
+        reference(url) ?? (url.pathname === '/api/v1/tutorials' ? { body: page([]) } : undefined),
+    );
     renderRoutes([{ path: '/tutorials', Component: CatalogPage }], ['/tutorials?search=zzz']);
     expect(await screen.findByRole('heading', { name: 'No tutorials found' })).toBeInTheDocument();
     const empty = screen.getByRole('heading', { name: 'No tutorials found' }).parentElement!;
@@ -49,7 +76,16 @@ describe('CatalogPage', () => {
       if (ref) return ref;
       if (url.pathname !== '/api/v1/tutorials') return undefined;
       return fail
-        ? { status: 500, body: { error: { code: 'INTERNAL_ERROR', message: 'Server exploded politely', requestId: 'r' } } }
+        ? {
+            status: 500,
+            body: {
+              error: {
+                code: 'INTERNAL_ERROR',
+                message: 'Server exploded politely',
+                requestId: 'r',
+              },
+            },
+          }
         : { body: page([tutorialSummary(3, 'Recovered')]) };
     });
     renderRoutes([{ path: '/tutorials', Component: CatalogPage }], ['/tutorials']);

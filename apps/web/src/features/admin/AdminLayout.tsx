@@ -32,11 +32,37 @@ const NAV: Array<{ heading: string; items: NavItem[] }> = [
   {
     heading: 'Catalogue',
     items: [
-      { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, permission: 'tutorials:manage', end: true },
-      { to: '/admin/tutorials', label: 'Tutorials', icon: BookOpen, permission: 'tutorials:manage' },
-      { to: '/admin/categories', label: 'Categories', icon: FolderTree, permission: 'categories:manage' },
-      { to: '/admin/difficulty-levels', label: 'Difficulty levels', icon: Gauge, permission: 'difficultyLevels:manage' },
-      { to: '/admin/reports', label: 'Tutorial report', icon: BarChart3, permission: 'reports:view' },
+      {
+        to: '/admin',
+        label: 'Dashboard',
+        icon: LayoutDashboard,
+        permission: 'tutorials:manage',
+        end: true,
+      },
+      {
+        to: '/admin/tutorials',
+        label: 'Tutorials',
+        icon: BookOpen,
+        permission: 'tutorials:manage',
+      },
+      {
+        to: '/admin/categories',
+        label: 'Categories',
+        icon: FolderTree,
+        permission: 'categories:manage',
+      },
+      {
+        to: '/admin/difficulty-levels',
+        label: 'Difficulty levels',
+        icon: Gauge,
+        permission: 'difficultyLevels:manage',
+      },
+      {
+        to: '/admin/reports',
+        label: 'Tutorial report',
+        icon: BarChart3,
+        permission: 'reports:view',
+      },
     ],
   },
   {
@@ -47,7 +73,12 @@ const NAV: Array<{ heading: string; items: NavItem[] }> = [
     heading: 'Account',
     items: [
       { to: '/admin/profile', label: 'My profile', icon: UserCircle, permission: 'profile:manage' },
-      { to: '/admin/password', label: 'Change password', icon: KeyRound, permission: 'profile:manage' },
+      {
+        to: '/admin/password',
+        label: 'Change password',
+        icon: KeyRound,
+        permission: 'profile:manage',
+      },
     ],
   },
 ];
@@ -80,7 +111,9 @@ export default function AdminLayout() {
         if (items.length === 0) return null;
         return (
           <div key={group.heading}>
-            <p className="px-3 text-xs font-bold tracking-wider text-ink-subtle uppercase">{group.heading}</p>
+            <p className="px-3 text-xs font-bold tracking-wider text-ink-subtle uppercase">
+              {group.heading}
+            </p>
             <ul className="mt-2 space-y-0.5">
               {items.map(({ to, label, icon: Icon, end }) => (
                 <li key={to}>
@@ -90,7 +123,9 @@ export default function AdminLayout() {
                     className={({ isActive }) =>
                       cn(
                         'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold transition-colors',
-                        isActive ? 'bg-brand-50 text-brand-800' : 'text-ink-muted hover:bg-canvas hover:text-ink',
+                        isActive
+                          ? 'bg-brand-50 text-brand-800'
+                          : 'text-ink-muted hover:bg-canvas hover:text-ink',
                       )
                     }
                   >
@@ -122,18 +157,29 @@ export default function AdminLayout() {
               onClick={() => setOpen((v) => !v)}
             >
               <span className="sr-only">{open ? 'Close navigation' : 'Open navigation'}</span>
-              {open ? <X className="size-5" aria-hidden="true" /> : <Menu className="size-5" aria-hidden="true" />}
+              {open ? (
+                <X className="size-5" aria-hidden="true" />
+              ) : (
+                <Menu className="size-5" aria-hidden="true" />
+              )}
             </button>
             <Brand />
-            <span className="hidden rounded-md bg-canvas px-2 py-0.5 text-xs font-bold text-ink-muted ring-1 ring-line sm:inline">Admin</span>
+            <span className="hidden rounded-md bg-canvas px-2 py-0.5 text-xs font-bold text-ink-muted ring-1 ring-line sm:inline">
+              Admin
+            </span>
           </div>
           <div className="flex items-center gap-2 sm:gap-4">
-            <NavLink to="/" className="hidden items-center gap-1.5 text-sm font-semibold text-ink-muted hover:text-ink md:inline-flex">
+            <NavLink
+              to="/"
+              className="hidden items-center gap-1.5 text-sm font-semibold text-ink-muted hover:text-ink md:inline-flex"
+            >
               View site <ExternalLink className="size-3.5" aria-hidden="true" />
             </NavLink>
             <div className="hidden text-right sm:block">
               <p className="text-sm leading-tight font-bold">{user?.name}</p>
-              <p className="text-xs text-ink-subtle">{user?.role === 'ADMIN' ? 'Administrator' : 'Operator'}</p>
+              <p className="text-xs text-ink-subtle">
+                {user?.role === 'ADMIN' ? 'Administrator' : 'Operator'}
+              </p>
             </div>
             <button
               type="button"
@@ -148,10 +194,22 @@ export default function AdminLayout() {
         </div>
       </header>
       <div className="flex">
-        <aside id="admin-sidebar" className={cn('fixed inset-y-16 left-0 z-20 w-64 overflow-y-auto border-r border-line bg-surface p-4 lg:sticky lg:top-16 lg:block lg:h-[calc(100vh-4rem)]', open ? 'block' : 'hidden')}>
+        <aside
+          id="admin-sidebar"
+          className={cn(
+            'fixed inset-y-16 left-0 z-20 w-64 overflow-y-auto border-r border-line bg-surface p-4 lg:sticky lg:top-16 lg:block lg:h-[calc(100vh-4rem)]',
+            open ? 'block' : 'hidden',
+          )}
+        >
           {sidebar}
         </aside>
-        {open && <div className="fixed inset-0 top-16 z-10 bg-ink/30 lg:hidden" aria-hidden="true" onClick={() => setOpen(false)} />}
+        {open && (
+          <div
+            className="fixed inset-0 top-16 z-10 bg-ink/30 lg:hidden"
+            aria-hidden="true"
+            onClick={() => setOpen(false)}
+          />
+        )}
         <main id="admin-main" className="min-w-0 flex-1 px-4 py-8 sm:px-6 lg:px-10">
           <div className="mx-auto max-w-6xl">
             <Outlet />

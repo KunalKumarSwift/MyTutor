@@ -25,20 +25,46 @@ export interface SeedTutorial {
 export const SEED_REFERENCE_DATE = Date.UTC(2026, 8, 30, 9, 0, 0);
 
 export const categories: SeedReference[] = [
-  { title: 'Programming Fundamentals', description: 'Core ideas every programmer relies on: variables, control flow, functions and debugging.' },
-  { title: 'Web Development', description: 'Building pages and applications for the browser, from markup to HTTP.' },
+  {
+    title: 'Programming Fundamentals',
+    description:
+      'Core ideas every programmer relies on: variables, control flow, functions and debugging.',
+  },
+  {
+    title: 'Web Development',
+    description: 'Building pages and applications for the browser, from markup to HTTP.',
+  },
   { title: 'Databases', description: 'Modelling, querying and protecting structured data.' },
-  { title: 'Data Structures & Algorithms', description: 'Organising data and reasoning about the cost of the code that processes it.' },
+  {
+    title: 'Data Structures & Algorithms',
+    description: 'Organising data and reasoning about the cost of the code that processes it.',
+  },
   { title: 'Networking', description: 'How computers find and talk to each other.' },
-  { title: 'Software Engineering', description: 'Practices for building software that keeps working as it grows.' },
-  { title: 'Legacy Platforms', description: 'Retired material kept for reference. Not shown publicly.', status: 'INACTIVE' },
+  {
+    title: 'Software Engineering',
+    description: 'Practices for building software that keeps working as it grows.',
+  },
+  {
+    title: 'Legacy Platforms',
+    description: 'Retired material kept for reference. Not shown publicly.',
+    status: 'INACTIVE',
+  },
 ];
 
 export const difficultyLevels: SeedReference[] = [
   { title: 'Beginner', description: 'No prior experience in the topic is assumed.', sortOrder: 1 },
-  { title: 'Intermediate', description: 'Comfortable with the basics and ready to go deeper.', sortOrder: 2 },
+  {
+    title: 'Intermediate',
+    description: 'Comfortable with the basics and ready to go deeper.',
+    sortOrder: 2,
+  },
   { title: 'Advanced', description: 'Builds on solid working experience.', sortOrder: 3 },
-  { title: 'Expert', description: 'Specialist material. Currently unpublished.', sortOrder: 4, status: 'INACTIVE' },
+  {
+    title: 'Expert',
+    description: 'Specialist material. Currently unpublished.',
+    sortOrder: 4,
+    status: 'INACTIVE',
+  },
 ];
 
 export const tutorials: SeedTutorial[] = [

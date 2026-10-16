@@ -53,20 +53,36 @@ export default function ManageTutorialsPage() {
     }
   }
 
-  const filtered = Boolean(values.search || values.status || values.categoryId || values.difficultyLevelId);
+  const filtered = Boolean(
+    values.search || values.status || values.categoryId || values.difficultyLevelId,
+  );
 
   return (
     <div className="space-y-6">
       <PageHeader
         title="Tutorials"
         description="Create, edit, publish and remove tutorials. Inactive tutorials are hidden from the public catalogue."
-        actions={<ButtonLink to="/admin/tutorials/new" icon={<Plus className="size-4" aria-hidden="true" />}>New tutorial</ButtonLink>}
+        actions={
+          <ButtonLink
+            to="/admin/tutorials/new"
+            icon={<Plus className="size-4" aria-hidden="true" />}
+          >
+            New tutorial
+          </ButtonLink>
+        }
       />
 
       <div className="grid gap-4 rounded-[var(--radius-card)] bg-surface p-4 ring-1 ring-line md:grid-cols-4">
-        <SearchBox label="Search title or content" value={values.search} onChange={(v) => set({ search: v })} />
+        <SearchBox
+          label="Search title or content"
+          value={values.search}
+          onChange={(v) => set({ search: v })}
+        />
         <Field label="Category">
-          <Select value={values.categoryId ?? ''} onChange={(e) => set({ category: e.target.value })}>
+          <Select
+            value={values.categoryId ?? ''}
+            onChange={(e) => set({ category: e.target.value })}
+          >
             <option value="">All categories</option>
             {categories.data?.map((c) => (
               <option key={c.id} value={c.id}>
@@ -76,7 +92,10 @@ export default function ManageTutorialsPage() {
           </Select>
         </Field>
         <Field label="Difficulty">
-          <Select value={values.difficultyLevelId ?? ''} onChange={(e) => set({ level: e.target.value })}>
+          <Select
+            value={values.difficultyLevelId ?? ''}
+            onChange={(e) => set({ level: e.target.value })}
+          >
             <option value="">All levels</option>
             {levels.data?.map((l) => (
               <option key={l.id} value={l.id}>
@@ -101,8 +120,14 @@ export default function ManageTutorialsPage() {
       ) : tutorials.data.data.length === 0 ? (
         <EmptyState
           title={filtered ? 'No tutorials match these filters' : 'No tutorials yet'}
-          description={filtered ? 'Try a different search or filter.' : 'Create the first tutorial to start the catalogue.'}
-          action={!filtered ? <ButtonLink to="/admin/tutorials/new">New tutorial</ButtonLink> : undefined}
+          description={
+            filtered
+              ? 'Try a different search or filter.'
+              : 'Create the first tutorial to start the catalogue.'
+          }
+          action={
+            !filtered ? <ButtonLink to="/admin/tutorials/new">New tutorial</ButtonLink> : undefined
+          }
         />
       ) : (
         <>
@@ -115,7 +140,10 @@ export default function ManageTutorialsPage() {
               {
                 header: 'Title',
                 cell: (t) => (
-                  <Link to={`/admin/tutorials/${t.id}`} className="font-semibold text-ink hover:text-brand-800">
+                  <Link
+                    to={`/admin/tutorials/${t.id}`}
+                    className="font-semibold text-ink hover:text-brand-800"
+                  >
                     {t.title}
                   </Link>
                 ),
@@ -123,16 +151,33 @@ export default function ManageTutorialsPage() {
               { header: 'Category', cell: (t) => t.category.title, hideOnMobile: true },
               { header: 'Level', cell: (t) => t.difficultyLevel.title, hideOnMobile: true },
               { header: 'Status', cell: (t) => <StatusBadge status={t.status} /> },
-              { header: 'Created', cell: (t) => <time dateTime={t.createdAt}>{formatDate(t.createdAt)}</time>, hideOnMobile: true },
+              {
+                header: 'Created',
+                cell: (t) => <time dateTime={t.createdAt}>{formatDate(t.createdAt)}</time>,
+                hideOnMobile: true,
+              },
               {
                 header: 'Actions',
                 className: 'text-right',
                 cell: (t) => (
                   <div className="flex justify-end gap-1">
-                    <ButtonLink to={`/admin/tutorials/${t.id}`} variant="ghost" size="sm" icon={<Pencil className="size-4" aria-hidden="true" />} aria-label={`Edit ${t.title}`}>
+                    <ButtonLink
+                      to={`/admin/tutorials/${t.id}`}
+                      variant="ghost"
+                      size="sm"
+                      icon={<Pencil className="size-4" aria-hidden="true" />}
+                      aria-label={`Edit ${t.title}`}
+                    >
                       <span className="hidden sm:inline">Edit</span>
                     </ButtonLink>
-                    <Button variant="ghost" size="sm" className="text-danger-700 hover:bg-danger-50 hover:text-danger-700" onClick={() => setPendingDelete(t)} aria-label={`Delete ${t.title}`} icon={<Trash2 className="size-4" aria-hidden="true" />}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-danger-700 hover:bg-danger-50 hover:text-danger-700"
+                      onClick={() => setPendingDelete(t)}
+                      aria-label={`Delete ${t.title}`}
+                      icon={<Trash2 className="size-4" aria-hidden="true" />}
+                    >
                       <span className="hidden sm:inline">Delete</span>
                     </Button>
                   </div>
@@ -140,7 +185,11 @@ export default function ManageTutorialsPage() {
               },
             ]}
           />
-          <Pagination pagination={tutorials.data.pagination} onPageChange={(page) => set({ page }, false)} label="Tutorial list pages" />
+          <Pagination
+            pagination={tutorials.data.pagination}
+            onPageChange={(page) => set({ page }, false)}
+            label="Tutorial list pages"
+          />
         </>
       )}
 
@@ -152,8 +201,8 @@ export default function ManageTutorialsPage() {
         onConfirm={() => void confirmDelete()}
         onCancel={() => setPendingDelete(null)}
       >
-        “{pendingDelete?.title}” will be permanently removed and cannot be restored. To hide it from the public without
-        deleting it, edit it and set its status to Inactive instead.
+        “{pendingDelete?.title}” will be permanently removed and cannot be restored. To hide it from
+        the public without deleting it, edit it and set its status to Inactive instead.
       </ConfirmDialog>
     </div>
   );

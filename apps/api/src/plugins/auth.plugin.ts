@@ -1,5 +1,10 @@
 import { CSRF_HEADER, type Permission } from '@mytutor/contracts';
-import type { FastifyInstance, FastifyReply, FastifyRequest, preHandlerAsyncHookHandler } from 'fastify';
+import type {
+  FastifyInstance,
+  FastifyReply,
+  FastifyRequest,
+  preHandlerAsyncHookHandler,
+} from 'fastify';
 import fp from 'fastify-plugin';
 import type { AppConfig } from '../config/env.js';
 import type { Container } from '../container.js';
@@ -43,66 +48,77 @@ function requestOrigin(request: FastifyRequest): string | null {
  * - Every unsafe /api request carrying an Origin/Referer must come from an allowed origin.
  * - Authenticated unsafe requests must also present the session-bound CSRF token header.
  */
-export const authPlugin = fp<{ config: AppConfig; container: Container }>(async (app: FastifyInstance, { config, container }) => {
-  const cookieName = sessionCookieName(config);
+export const authPlugin = fp<{ config: AppConfig; container: Container }>(
+  async (app: FastifyInstance, { config, container }) => {
+    const cookieName = sessionCookieName(config);
 
-  app.decorateRequest('actor', null);
-  app.decorateRequest('sessionToken', null);
+    app.decorateRequest('actor', null);
+    app.decorateRequest('sessionToken', null);
 
-  app.addHook('onRequest', async (request) => {
-    if (!request.url.startsWith('/api/')) return;
+    app.addHook('onRequest', async (request) => {
+      if (!request.url.startsWith('/api/')) return;
 
-    if (UNSAFE_METHODS.has(request.method)) {
-      const origin = requestOrigin(request);
-      const selfOrigin = `${request.protocol}://${request.host}`;
-      if (origin !== null && origin !== selfOrigin && !config.allowedOrigins.includes(origin)) {
-        throw new AppError('FORBIDDEN', 403, 'Cross-origin request rejected.');
+      if (UNSAFE_METHODS.has(request.method)) {
+        const origin = requestOrigin(request);
+        const selfOrigin = `${request.protocol}://${request.host}`;
+        if (origin !== null && origin !== selfOrigin && !config.allowedOrigins.includes(origin)) {
+          throw new AppError('FORBIDDEN', 403, 'Cross-origin request rejected.');
+        }
       }
-    }
 
-    const token = request.cookies[cookieName];
-    if (token) {
-      request.sessionToken = token;
-      request.actor = await container.auth.authenticate(token);
-    }
-  });
-
-  app.decorate('setSessionCookie', (reply: FastifyReply, token: string, expiresAt: Date) => {
-    reply.setCookie(cookieName, token, {
-      httpOnly: true,
-      secure: config.cookieSecure,
-      sameSite: 'lax',
-      path: '/',
-      expires: expiresAt,
+      const token = request.cookies[cookieName];
+      if (token) {
+        request.sessionToken = token;
+        request.actor = await container.auth.authenticate(token);
+      }
     });
-  });
 
-  app.decorate('clearSessionCookie', (reply: FastifyReply) => {
-    reply.clearCookie(cookieName, { path: '/', httpOnly: true, secure: config.cookieSecure, sameSite: 'lax' });
-  });
+    app.decorate('setSessionCookie', (reply: FastifyReply, token: string, expiresAt: Date) => {
+      reply.setCookie(cookieName, token, {
+        httpOnly: true,
+        secure: config.cookieSecure,
+        sameSite: 'lax',
+        path: '/',
+        expires: expiresAt,
+      });
+    });
 
-  const requireAuth: preHandlerAsyncHookHandler = async function (request, reply) {
-    if (!request.actor || !request.sessionToken) {
-      if (request.sessionToken) app.clearSessionCookie(reply);
-      throw unauthenticated();
-    }
-    if (UNSAFE_METHODS.has(request.method)) {
-      const provided = request.headers[CSRF_HEADER];
-      const expected = container.auth.csrfTokenFor(request.sessionToken);
-      if (typeof provided !== 'string' || !safeEqual(provided, expected)) {
-        throw new AppError('CSRF_INVALID', 403, 'Your session security token is missing or invalid. Reload and try again.');
+    app.decorate('clearSessionCookie', (reply: FastifyReply) => {
+      reply.clearCookie(cookieName, {
+        path: '/',
+        httpOnly: true,
+        secure: config.cookieSecure,
+        sameSite: 'lax',
+      });
+    });
+
+    const requireAuth: preHandlerAsyncHookHandler = async function (request, reply) {
+      if (!request.actor || !request.sessionToken) {
+        if (request.sessionToken) app.clearSessionCookie(reply);
+        throw unauthenticated();
       }
-    }
-  };
-
-  app.decorate('requireAuth', requireAuth);
-  app.decorate('requirePermission', (permission: Permission): preHandlerAsyncHookHandler => {
-    return async function (request, reply) {
-      await requireAuth.call(this, request, reply);
-      if (!container.policy.can(request.actor!, permission)) throw forbidden();
+      if (UNSAFE_METHODS.has(request.method)) {
+        const provided = request.headers[CSRF_HEADER];
+        const expected = container.auth.csrfTokenFor(request.sessionToken);
+        if (typeof provided !== 'string' || !safeEqual(provided, expected)) {
+          throw new AppError(
+            'CSRF_INVALID',
+            403,
+            'Your session security token is missing or invalid. Reload and try again.',
+          );
+        }
+      }
     };
-  });
-});
+
+    app.decorate('requireAuth', requireAuth);
+    app.decorate('requirePermission', (permission: Permission): preHandlerAsyncHookHandler => {
+      return async function (request, reply) {
+        await requireAuth.call(this, request, reply);
+        if (!container.policy.can(request.actor!, permission)) throw forbidden();
+      };
+    });
+  },
+);
 
 /** Narrows request.actor after requireAuth/requirePermission has run. */
 export function actorOf(request: FastifyRequest): AuthenticatedActor {

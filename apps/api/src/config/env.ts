@@ -2,9 +2,12 @@ import { Type, type Static } from '@sinclair/typebox';
 import { Value } from '@sinclair/typebox/value';
 
 const EnvSchema = Type.Object({
-  NODE_ENV: Type.Union([Type.Literal('development'), Type.Literal('test'), Type.Literal('production')], {
-    default: 'development',
-  }),
+  NODE_ENV: Type.Union(
+    [Type.Literal('development'), Type.Literal('test'), Type.Literal('production')],
+    {
+      default: 'development',
+    },
+  ),
   HOST: Type.String({ default: '127.0.0.1' }),
   PORT: Type.Integer({ minimum: 1, maximum: 65535, default: 3000 }),
   LOG_LEVEL: Type.Union(

@@ -20,13 +20,23 @@ interface DataTableProps<T> {
 /** Semantic table with a visually hidden caption; scrolls horizontally inside its card on narrow screens. */
 export function DataTable<T>({ caption, columns, rows, rowKey, busy }: DataTableProps<T>) {
   return (
-    <div className={cn('overflow-x-auto rounded-[var(--radius-card)] bg-surface ring-1 ring-line transition-opacity', busy && 'opacity-60')} aria-busy={busy}>
+    <div
+      className={cn(
+        'overflow-x-auto rounded-[var(--radius-card)] bg-surface ring-1 ring-line transition-opacity',
+        busy && 'opacity-60',
+      )}
+      aria-busy={busy}
+    >
       <table className="w-full min-w-[36rem] text-left text-sm">
         <caption className="sr-only">{caption}</caption>
         <thead className="border-b border-line bg-canvas/70 text-xs font-bold tracking-wide text-ink-muted uppercase">
           <tr>
             {columns.map((c) => (
-              <th key={c.header} scope="col" className={cn('px-4 py-3', c.hideOnMobile && 'hidden md:table-cell', c.className)}>
+              <th
+                key={c.header}
+                scope="col"
+                className={cn('px-4 py-3', c.hideOnMobile && 'hidden md:table-cell', c.className)}
+              >
                 {c.header}
               </th>
             ))}
@@ -36,7 +46,14 @@ export function DataTable<T>({ caption, columns, rows, rowKey, busy }: DataTable
           {rows.map((row) => (
             <tr key={rowKey(row)} className="hover:bg-canvas/60">
               {columns.map((c) => (
-                <td key={c.header} className={cn('px-4 py-3 align-middle', c.hideOnMobile && 'hidden md:table-cell', c.className)}>
+                <td
+                  key={c.header}
+                  className={cn(
+                    'px-4 py-3 align-middle',
+                    c.hideOnMobile && 'hidden md:table-cell',
+                    c.className,
+                  )}
+                >
                   {c.cell(row)}
                 </td>
               ))}

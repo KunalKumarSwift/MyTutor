@@ -67,7 +67,13 @@ export function createContainer(
       sessionTtlSeconds: config.sessionTtlSeconds,
     }),
     users: new UserFacade(userRepository, sessionRepository, hasher, policy, audit),
-    tutorials: new TutorialFacade(tutorialRepository, categoryRepository, levelRepository, policy, audit),
+    tutorials: new TutorialFacade(
+      tutorialRepository,
+      categoryRepository,
+      levelRepository,
+      policy,
+      audit,
+    ),
     categories: new ReferenceDataService(
       { label: 'Category', entityType: 'category' },
       'categories:manage',

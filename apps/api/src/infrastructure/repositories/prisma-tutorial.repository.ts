@@ -52,7 +52,9 @@ function toWhere(filter: TutorialFilter): Prisma.TutorialWhereInput {
         }
       : {}),
     ...(filter.categoryId !== undefined ? { categoryId: filter.categoryId } : {}),
-    ...(filter.difficultyLevelId !== undefined ? { difficultyLevelId: filter.difficultyLevelId } : {}),
+    ...(filter.difficultyLevelId !== undefined
+      ? { difficultyLevelId: filter.difficultyLevelId }
+      : {}),
     ...(filter.status ? { status: filter.status } : {}),
   };
 }
@@ -97,11 +99,18 @@ export class PrismaTutorialRepository implements TutorialRepository {
     }
   }
 
-  async update(id: number, data: Partial<TutorialWrite>, expectedUpdatedAt?: Date): Promise<TutorialRecord | null> {
+  async update(
+    id: number,
+    data: Partial<TutorialWrite>,
+    expectedUpdatedAt?: Date,
+  ): Promise<TutorialRecord | null> {
     try {
       if (expectedUpdatedAt) {
         // Conditional write: only applies if nobody changed the row since it was loaded.
-        const result = await this.db.tutorial.updateMany({ where: { id, updatedAt: expectedUpdatedAt }, data });
+        const result = await this.db.tutorial.updateMany({
+          where: { id, updatedAt: expectedUpdatedAt },
+          data,
+        });
         if (result.count === 0) return null;
         const row = await this.db.tutorial.findUniqueOrThrow({ where: { id }, include });
         return toRecord(row);
@@ -127,7 +136,11 @@ export class PrismaTutorialRepository implements TutorialRepository {
     return { total: active + inactive, active, inactive };
   }
 
-  private async page(where: Prisma.TutorialWhereInput, sort: TutorialSort, page: PageRequest): Promise<Page<TutorialRecord>> {
+  private async page(
+    where: Prisma.TutorialWhereInput,
+    sort: TutorialSort,
+    page: PageRequest,
+  ): Promise<Page<TutorialRecord>> {
     const [rows, totalItems] = await Promise.all([
       this.db.tutorial.findMany({ where, include, orderBy: toOrderBy(sort), ...toSkipTake(page) }),
       this.db.tutorial.count({ where }),

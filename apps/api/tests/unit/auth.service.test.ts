@@ -1,7 +1,12 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { AuthService } from '../../src/modules/auth/auth.service.js';
 import { hashSessionToken } from '../../src/shared/security/tokens.js';
-import { FakeClock, FakeHasher, InMemorySessionRepository, InMemoryUserRepository } from '../support/fakes.js';
+import {
+  FakeClock,
+  FakeHasher,
+  InMemorySessionRepository,
+  InMemoryUserRepository,
+} from '../support/fakes.js';
 
 describe('AuthService', () => {
   let users: InMemoryUserRepository;
@@ -13,8 +18,16 @@ describe('AuthService', () => {
     users = new InMemoryUserRepository();
     sessions = new InMemorySessionRepository();
     clock = new FakeClock();
-    auth = new AuthService(users, sessions, new FakeHasher(), clock, { sessionSecret: 's'.repeat(40), sessionTtlSeconds: 3600 });
-    users.seed({ username: 'alice', passwordHash: 'hashed:correct-horse', role: 'ADMIN', name: 'Alice' });
+    auth = new AuthService(users, sessions, new FakeHasher(), clock, {
+      sessionSecret: 's'.repeat(40),
+      sessionTtlSeconds: 3600,
+    });
+    users.seed({
+      username: 'alice',
+      passwordHash: 'hashed:correct-horse',
+      role: 'ADMIN',
+      name: 'Alice',
+    });
   });
 
   it('creates a session, stores only the token hash, and returns the principal', async () => {
@@ -31,7 +44,11 @@ describe('AuthService', () => {
     const unknown = await auth.login('nobody', 'x').catch((e: unknown) => e);
     const wrong = await auth.login('alice', 'wrong').catch((e: unknown) => e);
     expect(unknown).toMatchObject({ code: 'INVALID_CREDENTIALS', statusCode: 401 });
-    expect(wrong).toMatchObject({ code: 'INVALID_CREDENTIALS', statusCode: 401, message: (unknown as Error).message });
+    expect(wrong).toMatchObject({
+      code: 'INVALID_CREDENTIALS',
+      statusCode: 401,
+      message: (unknown as Error).message,
+    });
     expect(sessions.sessions).toHaveLength(0);
   });
 

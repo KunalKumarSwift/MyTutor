@@ -15,19 +15,34 @@ export function Pagination({ pagination, onPageChange, label = 'Pagination' }: P
   const last = Math.min(page * pageSize, totalItems);
 
   return (
-    <nav aria-label={label} className="flex flex-col items-center justify-between gap-3 sm:flex-row">
+    <nav
+      aria-label={label}
+      className="flex flex-col items-center justify-between gap-3 sm:flex-row"
+    >
       <p className="text-sm text-ink-muted" aria-live="polite">
-        Showing <span className="font-semibold text-ink">{first}</span>–<span className="font-semibold text-ink">{last}</span> of{' '}
+        Showing <span className="font-semibold text-ink">{first}</span>–
+        <span className="font-semibold text-ink">{last}</span> of{' '}
         <span className="font-semibold text-ink">{totalItems}</span>
       </p>
       <div className="flex items-center gap-2">
-        <Button variant="secondary" size="sm" disabled={page <= 1} onClick={() => onPageChange(page - 1)} icon={<ChevronLeft className="size-4" aria-hidden="true" />}>
+        <Button
+          variant="secondary"
+          size="sm"
+          disabled={page <= 1}
+          onClick={() => onPageChange(page - 1)}
+          icon={<ChevronLeft className="size-4" aria-hidden="true" />}
+        >
           Previous
         </Button>
         <span className="px-2 text-sm text-ink-muted">
           Page {page} of {totalPages}
         </span>
-        <Button variant="secondary" size="sm" disabled={page >= totalPages} onClick={() => onPageChange(page + 1)}>
+        <Button
+          variant="secondary"
+          size="sm"
+          disabled={page >= totalPages}
+          onClick={() => onPageChange(page + 1)}
+        >
           Next
           <ChevronRight className="size-4" aria-hidden="true" />
         </Button>

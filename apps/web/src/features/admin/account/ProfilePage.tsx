@@ -3,7 +3,13 @@ import { Button, ErrorState, LoadingState, PageHeader, useToast } from '../../..
 import { useDocumentTitle } from '../../../hooks/useDocumentTitle';
 import { ApiError } from '../../../lib/api';
 import { useProfile, useUpdateProfile } from '../api';
-import { EMPTY_PROFILE, ProfileFields, toProfileInput, validateProfile, type ProfileValues } from './ProfileFields';
+import {
+  EMPTY_PROFILE,
+  ProfileFields,
+  toProfileInput,
+  validateProfile,
+  type ProfileValues,
+} from './ProfileFields';
 
 export default function ProfilePage() {
   useDocumentTitle('My profile');
@@ -16,7 +22,14 @@ export default function ProfilePage() {
   useEffect(() => {
     if (profile.data) {
       const p = profile.data;
-      setValues({ name: p.name, email: p.email ?? '', dateOfBirth: p.dateOfBirth ?? '', gender: p.gender, address: p.address ?? '', mobile: p.mobile ?? '' });
+      setValues({
+        name: p.name,
+        email: p.email ?? '',
+        dateOfBirth: p.dateOfBirth ?? '',
+        gender: p.gender,
+        address: p.address ?? '',
+        mobile: p.mobile ?? '',
+      });
     }
   }, [profile.data]);
 
@@ -35,12 +48,17 @@ export default function ProfilePage() {
   }
 
   if (profile.isPending) return <LoadingState />;
-  if (profile.isError) return <ErrorState error={profile.error} onRetry={() => void profile.refetch()} />;
+  if (profile.isError)
+    return <ErrorState error={profile.error} onRetry={() => void profile.refetch()} />;
 
   return (
     <div className="space-y-6">
       <PageHeader title="My profile" description="Your account and personal information." />
-      <form noValidate onSubmit={(e) => void onSubmit(e)} className="space-y-6 rounded-[var(--radius-card)] bg-surface p-5 ring-1 ring-line sm:p-8">
+      <form
+        noValidate
+        onSubmit={(e) => void onSubmit(e)}
+        className="space-y-6 rounded-[var(--radius-card)] bg-surface p-5 ring-1 ring-line sm:p-8"
+      >
         <dl className="grid gap-4 rounded-lg bg-canvas p-4 text-sm sm:grid-cols-2">
           <div>
             <dt className="font-semibold text-ink-muted">User ID</dt>
@@ -48,7 +66,9 @@ export default function ProfilePage() {
           </div>
           <div>
             <dt className="font-semibold text-ink-muted">Role</dt>
-            <dd className="mt-0.5">{profile.data.role === 'ADMIN' ? 'Administrator' : 'Operator'}</dd>
+            <dd className="mt-0.5">
+              {profile.data.role === 'ADMIN' ? 'Administrator' : 'Operator'}
+            </dd>
           </div>
         </dl>
         <ProfileFields values={values} errors={errors} onChange={setValues} />

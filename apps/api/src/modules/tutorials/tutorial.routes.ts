@@ -9,7 +9,15 @@ import {
   PublicTutorialSummarySchema,
   TutorialSchema,
 } from '../../shared/http/dto-schemas.js';
-import { DataEnvelope, IdParams, Nullable, PageQuery, RequiredText, SearchText, StatusSchema } from '../../shared/http/schemas.js';
+import {
+  DataEnvelope,
+  IdParams,
+  Nullable,
+  PageQuery,
+  RequiredText,
+  SearchText,
+  StatusSchema,
+} from '../../shared/http/schemas.js';
 
 const Id = Type.Integer({ minimum: 1, maximum: 2_147_483_647 });
 const Sort = Type.Union([Type.Literal('newest'), Type.Literal('oldest'), Type.Literal('title')]);
@@ -25,9 +33,12 @@ const PublicQuery = Type.Object(
   { additionalProperties: false },
 );
 
-const ManageQuery = Type.Composite([PublicQuery, Type.Object({ status: Type.Optional(StatusSchema) })], {
-  additionalProperties: false,
-});
+const ManageQuery = Type.Composite(
+  [PublicQuery, Type.Object({ status: Type.Optional(StatusSchema) })],
+  {
+    additionalProperties: false,
+  },
+);
 
 const fields = {
   title: RequiredText(200),
@@ -56,13 +67,23 @@ const UpdateBody = Type.Object(
 export const publicTutorialRoutes: RoutePlugin = async (app, { container }) => {
   app.get(
     '/tutorials',
-    { schema: { querystring: PublicQuery, response: { 200: Paginated(PublicTutorialSummarySchema), ...errorResponses } } },
+    {
+      schema: {
+        querystring: PublicQuery,
+        response: { 200: Paginated(PublicTutorialSummarySchema), ...errorResponses },
+      },
+    },
     async (request) => container.tutorials.listPublicTutorials(request.query),
   );
 
   app.get(
     '/tutorials/:id',
-    { schema: { params: IdParams, response: { 200: DataEnvelope(PublicTutorialSchema), ...errorResponses } } },
+    {
+      schema: {
+        params: IdParams,
+        response: { 200: DataEnvelope(PublicTutorialSchema), ...errorResponses },
+      },
+    },
     async (request) => ({ data: await container.tutorials.getPublicTutorial(request.params.id) }),
   );
 };
@@ -72,19 +93,39 @@ export const adminTutorialRoutes: RoutePlugin = async (app, { container }) => {
 
   app.get(
     '/tutorials',
-    { preHandler, schema: { querystring: ManageQuery, response: { 200: Paginated(TutorialSchema), ...errorResponses } } },
+    {
+      preHandler,
+      schema: {
+        querystring: ManageQuery,
+        response: { 200: Paginated(TutorialSchema), ...errorResponses },
+      },
+    },
     async (request) => container.tutorials.listTutorials(request.query, actorOf(request)),
   );
 
   app.get(
     '/tutorials/:id',
-    { preHandler, schema: { params: IdParams, response: { 200: DataEnvelope(TutorialSchema), ...errorResponses } } },
-    async (request) => ({ data: await container.tutorials.getTutorial(request.params.id, actorOf(request)) }),
+    {
+      preHandler,
+      schema: {
+        params: IdParams,
+        response: { 200: DataEnvelope(TutorialSchema), ...errorResponses },
+      },
+    },
+    async (request) => ({
+      data: await container.tutorials.getTutorial(request.params.id, actorOf(request)),
+    }),
   );
 
   app.post(
     '/tutorials',
-    { preHandler, schema: { body: CreateBody, response: { 201: DataEnvelope(TutorialSchema), ...errorResponses } } },
+    {
+      preHandler,
+      schema: {
+        body: CreateBody,
+        response: { 201: DataEnvelope(TutorialSchema), ...errorResponses },
+      },
+    },
     async (request, reply) => {
       const created = await container.tutorials.createTutorial(request.body, actorOf(request));
       return reply.status(201).send({ data: created });
@@ -95,10 +136,18 @@ export const adminTutorialRoutes: RoutePlugin = async (app, { container }) => {
     '/tutorials/:id',
     {
       preHandler,
-      schema: { params: IdParams, body: UpdateBody, response: { 200: DataEnvelope(TutorialSchema), ...errorResponses } },
+      schema: {
+        params: IdParams,
+        body: UpdateBody,
+        response: { 200: DataEnvelope(TutorialSchema), ...errorResponses },
+      },
     },
     async (request) => ({
-      data: await container.tutorials.updateTutorial(request.params.id, request.body, actorOf(request)),
+      data: await container.tutorials.updateTutorial(
+        request.params.id,
+        request.body,
+        actorOf(request),
+      ),
     }),
   );
 

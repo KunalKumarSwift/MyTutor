@@ -13,7 +13,15 @@ interface FormDialogProps {
 }
 
 /** Modal form on the native <dialog> element (focus trap, Escape to close, inert background). */
-export function FormDialog({ open, title, submitLabel, busy, onSubmit, onClose, children }: FormDialogProps) {
+export function FormDialog({
+  open,
+  title,
+  submitLabel,
+  busy,
+  onSubmit,
+  onClose,
+  children,
+}: FormDialogProps) {
   const ref = useRef<HTMLDialogElement>(null);
   const titleId = useId();
 
@@ -45,7 +53,13 @@ export function FormDialog({ open, title, submitLabel, busy, onSubmit, onClose, 
             <h2 id={titleId} className="text-lg font-bold">
               {title}
             </h2>
-            <button type="button" onClick={onClose} disabled={busy} className="rounded-lg p-1 text-ink-subtle hover:bg-canvas hover:text-ink" aria-label="Close dialog">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={busy}
+              className="rounded-lg p-1 text-ink-subtle hover:bg-canvas hover:text-ink"
+              aria-label="Close dialog"
+            >
               <X className="size-5" aria-hidden="true" />
             </button>
           </div>

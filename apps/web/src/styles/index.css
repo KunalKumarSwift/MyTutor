@@ -8,7 +8,8 @@
  * darkened to meet WCAG AA contrast.
  */
 @theme {
-  --font-sans: 'Manrope Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-sans:
+    'Manrope Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 
   --color-brand-50: #eef8fc;
   --color-brand-100: #d5eef8;

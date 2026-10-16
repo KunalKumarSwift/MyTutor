@@ -1,7 +1,11 @@
 import type { SessionDto } from '@mytutor/contracts';
 import { AppError } from '../../shared/errors/app-error.js';
 import type { PasswordHasher } from '../../shared/security/password-hasher.js';
-import { deriveCsrfToken, generateSessionToken, hashSessionToken } from '../../shared/security/tokens.js';
+import {
+  deriveCsrfToken,
+  generateSessionToken,
+  hashSessionToken,
+} from '../../shared/security/tokens.js';
 import { toPrincipalDto } from '../users/user.mapper.js';
 import type { UserRepository } from '../users/user.types.js';
 import type { AuthenticatedActor, Clock, SessionRepository } from './auth.types.js';
@@ -49,7 +53,11 @@ export class AuthService {
 
     const sessionToken = generateSessionToken();
     const expiresAt = new Date(this.clock.now().getTime() + this.settings.sessionTtlSeconds * 1000);
-    await this.sessions.create({ userId: user.id, tokenHash: hashSessionToken(sessionToken), expiresAt });
+    await this.sessions.create({
+      userId: user.id,
+      tokenHash: hashSessionToken(sessionToken),
+      expiresAt,
+    });
     return {
       sessionToken,
       expiresAt,

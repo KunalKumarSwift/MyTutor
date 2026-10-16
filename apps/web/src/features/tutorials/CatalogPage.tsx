@@ -1,11 +1,25 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { Search, X } from 'lucide-react';
-import { Button, EmptyState, ErrorState, Field, PageHeader, Pagination, Select, TextInput } from '../../components/ui';
+import {
+  Button,
+  EmptyState,
+  ErrorState,
+  Field,
+  PageHeader,
+  Pagination,
+  Select,
+  TextInput,
+} from '../../components/ui';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 import { pluralize } from '../../lib/format';
-import { usePublicCategories, usePublicDifficultyLevels, usePublicTutorials, type CatalogFilters } from './public-api';
+import {
+  usePublicCategories,
+  usePublicDifficultyLevels,
+  usePublicTutorials,
+  type CatalogFilters,
+} from './public-api';
 import { TutorialGrid, TutorialGridSkeleton } from './TutorialCard';
 
 const SORTS = [
@@ -53,7 +67,8 @@ export default function CatalogPage() {
   };
 
   useEffect(() => {
-    if ((filters.search ?? '') !== debouncedSearch) update({ search: debouncedSearch || undefined });
+    if ((filters.search ?? '') !== debouncedSearch)
+      update({ search: debouncedSearch || undefined });
     // eslint-disable-next-line react-hooks/exhaustive-deps -- only react to the debounced value
   }, [debouncedSearch]);
 
@@ -65,18 +80,35 @@ export default function CatalogPage() {
 
   return (
     <div className="mx-auto max-w-[var(--container-page)] px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
-      <PageHeader title="Tutorials" description="Browse the catalogue by category and difficulty level, or search by keyword." />
+      <PageHeader
+        title="Tutorials"
+        description="Browse the catalogue by category and difficulty level, or search by keyword."
+      />
 
-      <section aria-label="Filter tutorials" className="mt-8 rounded-[var(--radius-card)] bg-surface p-4 shadow-[var(--shadow-card)] ring-1 ring-line sm:p-5">
-        <form role="search" onSubmit={(e) => e.preventDefault()} className="grid gap-4 md:grid-cols-[minmax(0,2fr)_repeat(3,minmax(0,1fr))]">
+      <section
+        aria-label="Filter tutorials"
+        className="mt-8 rounded-[var(--radius-card)] bg-surface p-4 shadow-[var(--shadow-card)] ring-1 ring-line sm:p-5"
+      >
+        <form
+          role="search"
+          onSubmit={(e) => e.preventDefault()}
+          className="grid gap-4 md:grid-cols-[minmax(0,2fr)_repeat(3,minmax(0,1fr))]"
+        >
           <Field label="Search">
-            <div className="relative">
-              <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-ink-subtle" aria-hidden="true" />
-              <TextInput type="search" placeholder="e.g. databases, loops…" className="pl-9" value={searchInput} onChange={(e) => setSearchInput(e.target.value)} maxLength={100} />
-            </div>
+            <TextInput
+              type="search"
+              leadingIcon={<Search />}
+              placeholder="e.g. databases, loops…"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              maxLength={100}
+            />
           </Field>
           <Field label="Category">
-            <Select value={filters.categoryId ?? ''} onChange={(e) => update({ category: e.target.value || undefined })}>
+            <Select
+              value={filters.categoryId ?? ''}
+              onChange={(e) => update({ category: e.target.value || undefined })}
+            >
               <option value="">All categories</option>
               {categories.data?.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -86,7 +118,10 @@ export default function CatalogPage() {
             </Select>
           </Field>
           <Field label="Difficulty">
-            <Select value={filters.difficultyLevelId ?? ''} onChange={(e) => update({ level: e.target.value || undefined })}>
+            <Select
+              value={filters.difficultyLevelId ?? ''}
+              onChange={(e) => update({ level: e.target.value || undefined })}
+            >
               <option value="">All levels</option>
               {levels.data?.map((l) => (
                 <option key={l.id} value={l.id}>
@@ -96,7 +131,12 @@ export default function CatalogPage() {
             </Select>
           </Field>
           <Field label="Sort by">
-            <Select value={filters.sort ?? 'newest'} onChange={(e) => update({ sort: e.target.value === 'newest' ? undefined : e.target.value })}>
+            <Select
+              value={filters.sort ?? 'newest'}
+              onChange={(e) =>
+                update({ sort: e.target.value === 'newest' ? undefined : e.target.value })
+              }
+            >
               {SORTS.map((s) => (
                 <option key={s.value} value={s.value}>
                   {s.label}
@@ -109,28 +149,55 @@ export default function CatalogPage() {
 
       <div className="mt-6 flex min-h-8 items-center justify-between gap-4">
         <p className="text-sm text-ink-muted" aria-live="polite">
-          {tutorials.data ? pluralize(tutorials.data.pagination.totalItems, 'tutorial') + (hasFilters ? ' match your filters' : ' available') : ' '}
+          {tutorials.data
+            ? pluralize(tutorials.data.pagination.totalItems, 'tutorial') +
+              (hasFilters ? ' match your filters' : ' available')
+            : ' '}
         </p>
         {hasFilters && (
-          <Button variant="ghost" size="sm" onClick={clearFilters} icon={<X className="size-4" aria-hidden="true" />}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={clearFilters}
+            icon={<X className="size-4" aria-hidden="true" />}
+          >
             Clear filters
           </Button>
         )}
       </div>
 
       <div className="mt-4" aria-busy={tutorials.isFetching}>
+        <h2 className="sr-only">Results</h2>
         {tutorials.isPending ? (
           <TutorialGridSkeleton />
         ) : tutorials.isError ? (
-          <ErrorState error={tutorials.error} title="We couldn’t load tutorials" onRetry={() => void tutorials.refetch()} />
+          <ErrorState
+            error={tutorials.error}
+            title="We couldn’t load tutorials"
+            onRetry={() => void tutorials.refetch()}
+          />
         ) : tutorials.data.data.length === 0 ? (
           <EmptyState
             title="No tutorials found"
-            description={hasFilters ? 'Try a different keyword or remove a filter.' : 'Tutorials will appear here once they are published.'}
-            action={hasFilters ? <Button variant="secondary" onClick={clearFilters}>Clear filters</Button> : undefined}
+            description={
+              hasFilters
+                ? 'Try a different keyword or remove a filter.'
+                : 'Tutorials will appear here once they are published.'
+            }
+            action={
+              hasFilters ? (
+                <Button variant="secondary" onClick={clearFilters}>
+                  Clear filters
+                </Button>
+              ) : undefined
+            }
           />
         ) : (
-          <div className={tutorials.isPlaceholderData ? 'opacity-60 transition-opacity' : 'transition-opacity'}>
+          <div
+            className={
+              tutorials.isPlaceholderData ? 'opacity-60 transition-opacity' : 'transition-opacity'
+            }
+          >
             <TutorialGrid tutorials={tutorials.data.data} />
             <div className="mt-10">
               <Pagination

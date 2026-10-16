@@ -59,8 +59,17 @@ async function main() {
 
     const categoryIds = new Map<string, number>();
     for (const c of categories) {
-      const data = { title: c.title, titleKey: titleKey(c.title), description: c.description, status: c.status ?? 'ACTIVE' };
-      const row = await db.category.upsert({ where: { titleKey: data.titleKey }, update: data, create: data });
+      const data = {
+        title: c.title,
+        titleKey: titleKey(c.title),
+        description: c.description,
+        status: c.status ?? 'ACTIVE',
+      };
+      const row = await db.category.upsert({
+        where: { titleKey: data.titleKey },
+        update: data,
+        create: data,
+      });
       categoryIds.set(c.title, row.id);
     }
 
@@ -73,7 +82,11 @@ async function main() {
         status: l.status ?? 'ACTIVE',
         sortOrder: l.sortOrder ?? 0,
       };
-      const row = await db.difficultyLevel.upsert({ where: { titleKey: data.titleKey }, update: data, create: data });
+      const row = await db.difficultyLevel.upsert({
+        where: { titleKey: data.titleKey },
+        update: data,
+        create: data,
+      });
       levelIds.set(l.title, row.id);
     }
 

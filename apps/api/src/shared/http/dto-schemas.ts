@@ -19,13 +19,19 @@ export const ErrorSchema = Type.Object({
   error: Type.Object({
     code: literals(ERROR_CODES),
     message: Type.String(),
-    details: Type.Optional(Type.Array(Type.Object({ field: Type.String(), message: Type.String() }))),
+    details: Type.Optional(
+      Type.Array(Type.Object({ field: Type.String(), message: Type.String() })),
+    ),
     requestId: Type.String(),
   }),
 });
 
 const Ref = Type.Object({ id: Type.Integer(), title: Type.String() });
-const RefWithStatus = Type.Object({ id: Type.Integer(), title: Type.String(), status: StatusSchema });
+const RefWithStatus = Type.Object({
+  id: Type.Integer(),
+  title: Type.String(),
+  status: StatusSchema,
+});
 const Author = Type.Object({ id: Type.Integer(), username: Type.String(), name: Type.String() });
 
 export const PublicTutorialSummarySchema = Type.Object({
@@ -34,7 +40,11 @@ export const PublicTutorialSummarySchema = Type.Object({
   prerequisites: Nullable(Type.String()),
   excerpt: Type.String(),
   category: Ref,
-  difficultyLevel: Type.Object({ id: Type.Integer(), title: Type.String(), sortOrder: Type.Integer() }),
+  difficultyLevel: Type.Object({
+    id: Type.Integer(),
+    title: Type.String(),
+    sortOrder: Type.Integer(),
+  }),
   createdAt: DateTime,
 });
 
@@ -44,7 +54,11 @@ export const PublicTutorialSchema = Type.Object({
   prerequisites: Nullable(Type.String()),
   description: Type.String(),
   category: Ref,
-  difficultyLevel: Type.Object({ id: Type.Integer(), title: Type.String(), sortOrder: Type.Integer() }),
+  difficultyLevel: Type.Object({
+    id: Type.Integer(),
+    title: Type.String(),
+    sortOrder: Type.Integer(),
+  }),
   createdAt: DateTime,
   updatedAt: DateTime,
 });
@@ -86,7 +100,10 @@ export const CategorySchema = Type.Object({
   updatedAt: DateTime,
 });
 
-export const DifficultyLevelSchema = Type.Composite([CategorySchema, Type.Object({ sortOrder: Type.Integer() })]);
+export const DifficultyLevelSchema = Type.Composite([
+  CategorySchema,
+  Type.Object({ sortOrder: Type.Integer() }),
+]);
 
 export const PrincipalSchema = Type.Object({
   id: Type.Integer(),
@@ -136,12 +153,21 @@ export const AuditEventSchema = Type.Object({
 });
 
 export const DashboardSchema = Type.Object({
-  tutorials: Type.Object({ total: Type.Integer(), active: Type.Integer(), inactive: Type.Integer() }),
+  tutorials: Type.Object({
+    total: Type.Integer(),
+    active: Type.Integer(),
+    inactive: Type.Integer(),
+  }),
   categories: Type.Integer(),
   difficultyLevels: Type.Integer(),
   users: Nullable(Type.Integer()),
   recentTutorials: Type.Array(
-    Type.Object({ id: Type.Integer(), title: Type.String(), status: StatusSchema, createdAt: DateTime }),
+    Type.Object({
+      id: Type.Integer(),
+      title: Type.String(),
+      status: StatusSchema,
+      createdAt: DateTime,
+    }),
   ),
   recentActivity: Type.Array(AuditEventSchema),
 });

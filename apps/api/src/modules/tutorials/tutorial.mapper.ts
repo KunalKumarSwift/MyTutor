@@ -9,7 +9,11 @@ export function toPublicTutorialSummaryDto(t: TutorialRecord): PublicTutorialSum
     prerequisites: t.prerequisites,
     excerpt: excerpt(t.description),
     category: { id: t.category.id, title: t.category.title },
-    difficultyLevel: { id: t.difficultyLevel.id, title: t.difficultyLevel.title, sortOrder: t.difficultyLevel.sortOrder },
+    difficultyLevel: {
+      id: t.difficultyLevel.id,
+      title: t.difficultyLevel.title,
+      sortOrder: t.difficultyLevel.sortOrder,
+    },
     createdAt: t.createdAt.toISOString(),
   };
 }
@@ -27,7 +31,11 @@ export function toTutorialDto(t: TutorialRecord): TutorialDto {
     prerequisites: t.prerequisites,
     status: t.status,
     category: { id: t.category.id, title: t.category.title, status: t.category.status },
-    difficultyLevel: { id: t.difficultyLevel.id, title: t.difficultyLevel.title, status: t.difficultyLevel.status },
+    difficultyLevel: {
+      id: t.difficultyLevel.id,
+      title: t.difficultyLevel.title,
+      status: t.difficultyLevel.status,
+    },
     author: t.author,
     createdAt: t.createdAt.toISOString(),
     updatedAt: t.updatedAt.toISOString(),

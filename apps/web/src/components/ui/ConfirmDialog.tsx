@@ -16,7 +16,16 @@ interface ConfirmDialogProps {
  * Modal confirmation built on the native <dialog> element: focus is trapped and restored
  * by the browser, Escape cancels, and the rest of the page is inert while open.
  */
-export function ConfirmDialog({ open, title, children, confirmLabel, tone = 'danger', busy, onConfirm, onCancel }: ConfirmDialogProps) {
+export function ConfirmDialog({
+  open,
+  title,
+  children,
+  confirmLabel,
+  tone = 'danger',
+  busy,
+  onConfirm,
+  onCancel,
+}: ConfirmDialogProps) {
   const ref = useRef<HTMLDialogElement>(null);
   const titleId = useId();
 

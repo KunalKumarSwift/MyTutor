@@ -11,16 +11,24 @@ async function main() {
     createContainer: (logger) => createContainer(config, db, logger),
     ...(config.isProduction
       ? {}
-      : { logger: { level: config.logLevel, transport: { target: 'pino-pretty', options: { singleLine: true } } } }),
+      : {
+          logger: {
+            level: config.logLevel,
+            transport: { target: 'pino-pretty', options: { singleLine: true } },
+          },
+        }),
   });
 
   // Periodically purge expired sessions (they are also rejected on use).
-  const purge = setInterval(() => {
-    app.container.auth
-      .purgeExpiredSessions()
-      .then((count) => count > 0 && app.log.info({ count }, 'Purged expired sessions'))
-      .catch((err: unknown) => app.log.error({ err }, 'Session purge failed'));
-  }, 60 * 60 * 1000);
+  const purge = setInterval(
+    () => {
+      app.container.auth
+        .purgeExpiredSessions()
+        .then((count) => count > 0 && app.log.info({ count }, 'Purged expired sessions'))
+        .catch((err: unknown) => app.log.error({ err }, 'Session purge failed'));
+    },
+    60 * 60 * 1000,
+  );
   purge.unref();
 
   const shutdown = async (signal: string) => {

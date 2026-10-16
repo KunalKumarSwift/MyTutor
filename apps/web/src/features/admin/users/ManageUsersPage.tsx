@@ -1,7 +1,18 @@
 import { Link } from 'react-router';
 import { Pencil, Plus } from 'lucide-react';
 import type { UserDto } from '@mytutor/contracts';
-import { Button, ButtonLink, DataTable, EmptyState, ErrorState, LoadingState, PageHeader, Pagination, StatusBadge, useToast } from '../../../components/ui';
+import {
+  Button,
+  ButtonLink,
+  DataTable,
+  EmptyState,
+  ErrorState,
+  LoadingState,
+  PageHeader,
+  Pagination,
+  StatusBadge,
+  useToast,
+} from '../../../components/ui';
 import { useDocumentTitle } from '../../../hooks/useDocumentTitle';
 import { ApiError } from '../../../lib/api';
 import { useSession } from '../../auth/session';
@@ -32,10 +43,18 @@ export default function ManageUsersPage() {
       <PageHeader
         title="Users"
         description="Operator accounts that can manage the catalogue. Deactivating an account signs it out immediately."
-        actions={<ButtonLink to="/admin/users/new" icon={<Plus className="size-4" aria-hidden="true" />}>New operator</ButtonLink>}
+        actions={
+          <ButtonLink to="/admin/users/new" icon={<Plus className="size-4" aria-hidden="true" />}>
+            New operator
+          </ButtonLink>
+        }
       />
       <div className="rounded-[var(--radius-card)] bg-surface p-4 ring-1 ring-line sm:max-w-md">
-        <SearchBox label="Search by name or user ID" value={values.search} onChange={(v) => set({ search: v })} />
+        <SearchBox
+          label="Search by name or user ID"
+          value={values.search}
+          onChange={(v) => set({ search: v })}
+        />
       </div>
       {users.isPending ? (
         <LoadingState />
@@ -55,14 +74,21 @@ export default function ManageUsersPage() {
                 header: 'Name',
                 cell: (u) => (
                   <div>
-                    <Link to={`/admin/users/${u.id}`} className="font-semibold hover:text-brand-800">
+                    <Link
+                      to={`/admin/users/${u.id}`}
+                      className="font-semibold hover:text-brand-800"
+                    >
                       {u.name}
                     </Link>
                     <p className="font-mono text-xs text-ink-subtle">{u.username}</p>
                   </div>
                 ),
               },
-              { header: 'Role', cell: (u) => (u.role === 'ADMIN' ? 'Administrator' : 'Operator'), hideOnMobile: true },
+              {
+                header: 'Role',
+                cell: (u) => (u.role === 'ADMIN' ? 'Administrator' : 'Operator'),
+                hideOnMobile: true,
+              },
               { header: 'Email', cell: (u) => u.email ?? '—', hideOnMobile: true },
               { header: 'Mobile', cell: (u) => u.mobile ?? '—', hideOnMobile: true },
               {
@@ -71,7 +97,13 @@ export default function ManageUsersPage() {
                   <div className="flex items-center gap-2">
                     <StatusBadge status={u.status} />
                     {u.id !== me?.id && (
-                      <Button variant="ghost" size="sm" onClick={() => void toggle(u)} disabled={save.isPending} aria-label={`${u.status === 'ACTIVE' ? 'Deactivate' : 'Activate'} ${u.name}`}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => void toggle(u)}
+                        disabled={save.isPending}
+                        aria-label={`${u.status === 'ACTIVE' ? 'Deactivate' : 'Activate'} ${u.name}`}
+                      >
                         {u.status === 'ACTIVE' ? 'Deactivate' : 'Activate'}
                       </Button>
                     )}
@@ -82,14 +114,23 @@ export default function ManageUsersPage() {
                 header: 'Actions',
                 className: 'text-right',
                 cell: (u) => (
-                  <ButtonLink to={`/admin/users/${u.id}`} variant="ghost" size="sm" icon={<Pencil className="size-4" aria-hidden="true" />} aria-label={`Edit ${u.name}`}>
+                  <ButtonLink
+                    to={`/admin/users/${u.id}`}
+                    variant="ghost"
+                    size="sm"
+                    icon={<Pencil className="size-4" aria-hidden="true" />}
+                    aria-label={`Edit ${u.name}`}
+                  >
                     <span className="hidden sm:inline">Edit</span>
                   </ButtonLink>
                 ),
               },
             ]}
           />
-          <Pagination pagination={users.data.pagination} onPageChange={(page) => set({ page }, false)} />
+          <Pagination
+            pagination={users.data.pagination}
+            onPageChange={(page) => set({ page }, false)}
+          />
         </>
       )}
     </div>

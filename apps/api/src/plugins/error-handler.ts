@@ -14,7 +14,10 @@ function fieldName(issue: ValidationIssue): string {
   if (issue.keyword === 'required' && typeof issue.params['missingProperty'] === 'string') {
     return path ? `${path}.${issue.params['missingProperty']}` : issue.params['missingProperty'];
   }
-  if (issue.keyword === 'additionalProperties' && typeof issue.params['additionalProperty'] === 'string') {
+  if (
+    issue.keyword === 'additionalProperties' &&
+    typeof issue.params['additionalProperty'] === 'string'
+  ) {
     return issue.params['additionalProperty'];
   }
   return path || '(request)';
@@ -27,7 +30,9 @@ function issueMessage(issue: ValidationIssue): string {
     case 'additionalProperties':
       return 'This field is not supported.';
     case 'minLength':
-      return issue.params['limit'] === 1 ? 'This field is required.' : `Must be at least ${String(issue.params['limit'])} characters.`;
+      return issue.params['limit'] === 1
+        ? 'This field is required.'
+        : `Must be at least ${String(issue.params['limit'])} characters.`;
     case 'maxLength':
       return `Must be at most ${String(issue.params['limit'])} characters.`;
     case 'pattern':
@@ -51,7 +56,12 @@ function toDetails(issues: ValidationIssue[]): ErrorDetail[] {
   return [...byField].map(([field, message]) => ({ field, message }));
 }
 
-function send(reply: FastifyReply, request: FastifyRequest, status: number, body: Omit<ErrorResponse['error'], 'requestId'>) {
+function send(
+  reply: FastifyReply,
+  request: FastifyRequest,
+  status: number,
+  body: Omit<ErrorResponse['error'], 'requestId'>,
+) {
   const payload: ErrorResponse = { error: { ...body, requestId: String(request.id) } };
   return reply.status(status).send(payload);
 }
@@ -59,7 +69,8 @@ function send(reply: FastifyReply, request: FastifyRequest, status: number, body
 export function registerErrorHandling(app: FastifyInstance): void {
   app.setErrorHandler((error: FastifyError | AppError, request, reply) => {
     if (error instanceof AppError) {
-      if (error.statusCode === 429) reply.header('retry-after', reply.getHeader('retry-after') ?? '60');
+      if (error.statusCode === 429)
+        reply.header('retry-after', reply.getHeader('retry-after') ?? '60');
       return send(reply, request, error.statusCode, {
         code: error.code,
         message: error.message,
@@ -82,7 +93,12 @@ export function registerErrorHandling(app: FastifyInstance): void {
       request.log.info({ code: fastifyError.code }, 'Rejected malformed request');
       return send(reply, request, status === 404 ? 404 : status === 429 ? 429 : 400, {
         code: status === 404 ? 'NOT_FOUND' : status === 429 ? 'RATE_LIMITED' : 'VALIDATION_ERROR',
-        message: status === 413 ? 'The request body is too large.' : status === 415 ? 'Requests must be sent as JSON.' : 'The request could not be processed.',
+        message:
+          status === 413
+            ? 'The request body is too large.'
+            : status === 415
+              ? 'Requests must be sent as JSON.'
+              : 'The request could not be processed.',
       });
     }
 
@@ -95,5 +111,8 @@ export function registerErrorHandling(app: FastifyInstance): void {
 }
 
 export function apiNotFound(request: FastifyRequest, reply: FastifyReply) {
-  return send(reply, request, 404, { code: 'NOT_FOUND', message: 'The requested resource does not exist.' });
+  return send(reply, request, 404, {
+    code: 'NOT_FOUND',
+    message: 'The requested resource does not exist.',
+  });
 }

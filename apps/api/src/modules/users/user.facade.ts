@@ -40,12 +40,18 @@ export class UserFacade {
 
   // ----- Administration (admin only) -----
 
-  async listUsers(query: UserListQuery, actor: AuthenticatedActor): Promise<PaginatedResponse<UserDto>> {
+  async listUsers(
+    query: UserListQuery,
+    actor: AuthenticatedActor,
+  ): Promise<PaginatedResponse<UserDto>> {
     this.policy.assert(actor, 'users:manage');
     const page = normalizePage(query.page, query.pageSize, 20);
     const search = query.search?.trim();
     const result = await this.users.list(search ? { search } : {}, page);
-    return { data: result.items.map(toUserDto), pagination: buildPagination(page, result.totalItems) };
+    return {
+      data: result.items.map(toUserDto),
+      pagination: buildPagination(page, result.totalItems),
+    };
   }
 
   async getUser(id: number, actor: AuthenticatedActor): Promise<UserDto> {
@@ -60,7 +66,9 @@ export class UserFacade {
     this.policy.assert(actor, 'users:manage');
     const username = normalizeUsername(input.username);
     if (await this.users.findByUsername(username)) {
-      throw conflict('That username is already taken.', [{ field: 'username', message: 'Username already exists.' }]);
+      throw conflict('That username is already taken.', [
+        { field: 'username', message: 'Username already exists.' },
+      ]);
     }
     const created = await this.users.create({
       ...cleanProfile(input),
@@ -79,7 +87,11 @@ export class UserFacade {
     return toUserDto(created);
   }
 
-  async updateUser(id: number, input: UpdateUserInput, actor: AuthenticatedActor): Promise<UserDto> {
+  async updateUser(
+    id: number,
+    input: UpdateUserInput,
+    actor: AuthenticatedActor,
+  ): Promise<UserDto> {
     this.policy.assert(actor, 'users:manage');
     const existing = await this.users.findById(id);
     if (!existing) throw notFound('User');
@@ -139,9 +151,13 @@ export class UserFacade {
       ]);
     }
     if (input.currentPassword === input.newPassword) {
-      throw invalid([{ field: 'newPassword', message: 'Choose a password different from the current one.' }]);
+      throw invalid([
+        { field: 'newPassword', message: 'Choose a password different from the current one.' },
+      ]);
     }
-    await this.users.update(actor.userId, { passwordHash: await this.hasher.hash(input.newPassword) });
+    await this.users.update(actor.userId, {
+      passwordHash: await this.hasher.hash(input.newPassword),
+    });
     // Sign out other devices; keep the session that performed the change.
     await this.sessions.deleteForUser(actor.userId, actor.sessionId);
     await this.audit.record({

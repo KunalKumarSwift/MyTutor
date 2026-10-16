@@ -44,7 +44,12 @@ export async function buildApp({ config, createContainer, logger }: BuildAppOpti
     logger: logger ?? {
       level: config.logLevel,
       redact: {
-        paths: ['req.headers.cookie', 'req.headers.authorization', 'req.headers["x-csrf-token"]', 'res.headers["set-cookie"]'],
+        paths: [
+          'req.headers.cookie',
+          'req.headers.authorization',
+          'req.headers["x-csrf-token"]',
+          'res.headers["set-cookie"]',
+        ],
         censor: '[redacted]',
       },
     },
@@ -87,7 +92,9 @@ export async function buildApp({ config, createContainer, logger }: BuildAppOpti
         ...(config.isProduction ? { upgradeInsecureRequests: [] } : {}),
       },
     },
-    strictTransportSecurity: config.isProduction ? { maxAge: 31_536_000, includeSubDomains: true } : false,
+    strictTransportSecurity: config.isProduction
+      ? { maxAge: 31_536_000, includeSubDomains: true }
+      : false,
     crossOriginEmbedderPolicy: false,
   });
   await app.register(cookie);
@@ -95,7 +102,12 @@ export async function buildApp({ config, createContainer, logger }: BuildAppOpti
     global: true,
     max: config.apiRateLimitMax,
     timeWindow: '1 minute',
-    errorResponseBuilder: () => new AppError('RATE_LIMITED', 429, 'Too many requests. Please slow down and try again shortly.'),
+    errorResponseBuilder: () =>
+      new AppError(
+        'RATE_LIMITED',
+        429,
+        'Too many requests. Please slow down and try again shortly.',
+      ),
   });
   await app.register(authPlugin, { config, container });
 
@@ -131,9 +143,14 @@ export async function buildApp({ config, createContainer, logger }: BuildAppOpti
       root: webRoot,
       wildcard: false,
       index: false,
+      // Serve the .br/.gz files produced at build time when the client accepts them.
+      preCompressed: true,
       setHeaders(res, path) {
         // Hashed build assets never change; the HTML shell must always be revalidated.
-        res.header('cache-control', path.includes('/assets/') ? 'public, max-age=31536000, immutable' : 'no-cache');
+        res.header(
+          'cache-control',
+          path.includes('/assets/') ? 'public, max-age=31536000, immutable' : 'no-cache',
+        );
       },
     });
     app.get('/*', { config: { rateLimit: false } }, async (request, reply) => {
@@ -144,7 +161,10 @@ export async function buildApp({ config, createContainer, logger }: BuildAppOpti
       return reply.header('cache-control', 'no-cache').sendFile('index.html');
     });
   } else if (webRoot) {
-    app.log.warn({ webRoot }, 'WEB_DIST_DIR is set but index.html was not found; static serving disabled');
+    app.log.warn(
+      { webRoot },
+      'WEB_DIST_DIR is set but index.html was not found; static serving disabled',
+    );
   }
 
   app.setNotFoundHandler(apiNotFound);

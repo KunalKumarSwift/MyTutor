@@ -1,4 +1,9 @@
-import { CSRF_HEADER, type ErrorCode, type ErrorDetail, type ErrorResponse } from '@mytutor/contracts';
+import {
+  CSRF_HEADER,
+  type ErrorCode,
+  type ErrorDetail,
+  type ErrorResponse,
+} from '@mytutor/contracts';
 
 const BASE = '/api/v1';
 
@@ -71,7 +76,11 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
     });
   } catch (error) {
     if (error instanceof DOMException && error.name === 'AbortError') throw error;
-    throw new ApiError(0, 'NETWORK_ERROR', 'Could not reach the server. Check your connection and try again.');
+    throw new ApiError(
+      0,
+      'NETWORK_ERROR',
+      'Could not reach the server. Check your connection and try again.',
+    );
   }
 
   if (response.status === 204) return undefined as T;
@@ -95,7 +104,8 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
 export const api = {
   get: <T>(path: string, query?: Query, signal?: AbortSignal) =>
     apiRequest<T>(path, { query, ...(signal ? { signal } : {}) }),
-  post: <T>(path: string, body?: unknown) => apiRequest<T>(path, { method: 'POST', body: body ?? {} }),
+  post: <T>(path: string, body?: unknown) =>
+    apiRequest<T>(path, { method: 'POST', body: body ?? {} }),
   put: <T>(path: string, body: unknown) => apiRequest<T>(path, { method: 'PUT', body }),
   patch: <T>(path: string, body: unknown) => apiRequest<T>(path, { method: 'PATCH', body }),
   delete: (path: string) => apiRequest<void>(path, { method: 'DELETE' }),

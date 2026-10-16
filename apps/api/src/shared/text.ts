@@ -6,7 +6,10 @@ export function cleanText(value: string): string {
 /** Trims multi-line text while preserving paragraph breaks. Empty becomes null. */
 export function cleanMultiline(value: string | null | undefined): string | null {
   if (value === null || value === undefined) return null;
-  const normalized = value.replace(/\r\n?/g, '\n').replace(/[ \t]+\n/g, '\n').trim();
+  const normalized = value
+    .replace(/\r\n?/g, '\n')
+    .replace(/[ \t]+\n/g, '\n')
+    .trim();
   return normalized === '' ? null : normalized;
 }
 

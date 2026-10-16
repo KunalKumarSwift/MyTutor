@@ -5,11 +5,24 @@ import { RequireAuth } from '../src/features/auth/guards';
 import LoginPage, { safeRedirect } from '../src/features/auth/LoginPage';
 import { mockApi, renderRoutes } from './test-utils';
 
-const principal = { id: 1, username: 'admin', name: 'Admin', role: 'ADMIN', permissions: ['tutorials:manage'] };
+const principal = {
+  id: 1,
+  username: 'admin',
+  name: 'Admin',
+  role: 'ADMIN',
+  permissions: ['tutorials:manage'],
+};
 
 const routes = [
   { path: '/login', Component: LoginPage },
-  { path: '/admin', element: <RequireAuth><h1>Admin area</h1></RequireAuth> },
+  {
+    path: '/admin',
+    element: (
+      <RequireAuth>
+        <h1>Admin area</h1>
+      </RequireAuth>
+    ),
+  },
 ];
 
 describe('authentication UI', () => {
@@ -39,7 +52,16 @@ describe('authentication UI', () => {
   it('shows the server message on failure and clears the password', async () => {
     mockApi((url) =>
       url.pathname === '/api/v1/auth/login'
-        ? { status: 401, body: { error: { code: 'INVALID_CREDENTIALS', message: 'Invalid username or password.', requestId: 'r' } } }
+        ? {
+            status: 401,
+            body: {
+              error: {
+                code: 'INVALID_CREDENTIALS',
+                message: 'Invalid username or password.',
+                requestId: 'r',
+              },
+            },
+          }
         : undefined,
     );
     renderRoutes(routes, ['/login']);
@@ -51,7 +73,11 @@ describe('authentication UI', () => {
   });
 
   it('signs in and continues to the protected page', async () => {
-    mockApi((url) => (url.pathname === '/api/v1/auth/login' ? { body: { data: { user: principal, csrfToken: 't' } } } : undefined));
+    mockApi((url) =>
+      url.pathname === '/api/v1/auth/login'
+        ? { body: { data: { user: principal, csrfToken: 't' } } }
+        : undefined,
+    );
     const { router } = renderRoutes(routes, ['/admin']);
     await userEvent.type(await screen.findByLabelText(/User ID/), 'admin');
     await userEvent.type(screen.getByLabelText(/Password/), 'correct-password');

@@ -23,10 +23,21 @@ describe('UserFacade', () => {
     sessions = new InMemorySessionRepository();
     users.seed({ username: 'admin', role: 'ADMIN', passwordHash: 'hashed:old-password' });
     users.seed({ username: 'op', passwordHash: 'hashed:old-password' });
-    facade = new UserFacade(users, sessions, new FakeHasher(), new AuthorizationPolicy(), new RepositoryAuditLogger(new InMemoryAuditRepository(), silentLogger));
+    facade = new UserFacade(
+      users,
+      sessions,
+      new FakeHasher(),
+      new AuthorizationPolicy(),
+      new RepositoryAuditLogger(new InMemoryAuditRepository(), silentLogger),
+    );
   });
 
-  const newUser = { username: 'NewOp', password: 'secret-123', name: ' New  Operator ', email: ' New@Example.org ' };
+  const newUser = {
+    username: 'NewOp',
+    password: 'secret-123',
+    name: ' New  Operator ',
+    email: ' New@Example.org ',
+  };
 
   it('denies user management to operators', async () => {
     await expect(facade.listUsers({}, operator)).rejects.toMatchObject({ code: 'FORBIDDEN' });
@@ -35,17 +46,27 @@ describe('UserFacade', () => {
 
   it('creates operators (legacy rule) with a hashed password and normalized fields', async () => {
     const created = await facade.createUser(newUser, admin);
-    expect(created).toMatchObject({ username: 'newop', role: 'OPERATOR', name: 'New Operator', email: 'new@example.org', status: 'ACTIVE' });
+    expect(created).toMatchObject({
+      username: 'newop',
+      role: 'OPERATOR',
+      name: 'New Operator',
+      email: 'new@example.org',
+      status: 'ACTIVE',
+    });
     expect(users.users.at(-1)!.passwordHash).toBe('hashed:secret-123');
     expect(created).not.toHaveProperty('passwordHash');
   });
 
   it('rejects duplicate usernames', async () => {
-    await expect(facade.createUser({ ...newUser, username: 'OP' }, admin)).rejects.toMatchObject({ code: 'CONFLICT' });
+    await expect(facade.createUser({ ...newUser, username: 'OP' }, admin)).rejects.toMatchObject({
+      code: 'CONFLICT',
+    });
   });
 
   it('prevents administrators from deactivating themselves', async () => {
-    await expect(facade.updateUser(1, { status: 'INACTIVE' }, admin)).rejects.toMatchObject({ statusCode: 422 });
+    await expect(facade.updateUser(1, { status: 'INACTIVE' }, admin)).rejects.toMatchObject({
+      statusCode: 422,
+    });
   });
 
   it('revokes sessions when a user is deactivated or their password is reset', async () => {
@@ -65,21 +86,34 @@ describe('UserFacade', () => {
       facade.changePassword({ currentPassword: 'wrong', newPassword: 'another-pw' }, operator),
     ).rejects.toMatchObject({ details: [expect.objectContaining({ field: 'currentPassword' })] });
 
-    const current = await sessions.create({ userId: 2, tokenHash: 'cur', expiresAt: new Date(Date.now() + 1e6) });
+    const current = await sessions.create({
+      userId: 2,
+      tokenHash: 'cur',
+      expiresAt: new Date(Date.now() + 1e6),
+    });
     await sessions.create({ userId: 2, tokenHash: 'other', expiresAt: new Date(Date.now() + 1e6) });
-    await facade.changePassword({ currentPassword: 'old-password', newPassword: 'another-pw' }, { ...operator, sessionId: current.id });
+    await facade.changePassword(
+      { currentPassword: 'old-password', newPassword: 'another-pw' },
+      { ...operator, sessionId: current.id },
+    );
     expect(sessions.sessions.map((s) => s.id)).toEqual([current.id]);
     expect(users.users[1]!.passwordHash).toBe('hashed:another-pw');
   });
 
   it('rejects reusing the current password', async () => {
     await expect(
-      facade.changePassword({ currentPassword: 'old-password', newPassword: 'old-password' }, operator),
+      facade.changePassword(
+        { currentPassword: 'old-password', newPassword: 'old-password' },
+        operator,
+      ),
     ).rejects.toMatchObject({ details: [expect.objectContaining({ field: 'newPassword' })] });
   });
 
   it('updates only the caller’s own profile', async () => {
-    const profile = await facade.updateProfile({ name: 'Op Erator', email: 'OP@x.org', mobile: '' }, operator);
+    const profile = await facade.updateProfile(
+      { name: 'Op Erator', email: 'OP@x.org', mobile: '' },
+      operator,
+    );
     expect(profile).toMatchObject({ id: 2, name: 'Op Erator', email: 'op@x.org', mobile: null });
     expect(users.users[0]!.name).toBe('admin');
   });

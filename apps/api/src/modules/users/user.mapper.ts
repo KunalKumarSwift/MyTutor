@@ -25,7 +25,9 @@ export function toUserDto(user: UserRecord): UserDto {
   };
 }
 
-export function toPrincipalDto(user: Pick<UserRecord, 'id' | 'username' | 'name' | 'role'>): PrincipalDto {
+export function toPrincipalDto(
+  user: Pick<UserRecord, 'id' | 'username' | 'name' | 'role'>,
+): PrincipalDto {
   return {
     id: user.id,
     username: user.username,

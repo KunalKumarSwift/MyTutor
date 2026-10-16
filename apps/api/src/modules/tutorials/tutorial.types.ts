@@ -43,16 +43,28 @@ export interface TutorialRepository {
    * Publicly visible tutorials: the tutorial, its category and its difficulty level are all
    * ACTIVE. (Legacy guest pages listed every tutorial regardless of status.)
    */
-  listPublic(filter: Omit<TutorialFilter, 'status'>, sort: TutorialSort, page: PageRequest): Promise<Page<TutorialRecord>>;
+  listPublic(
+    filter: Omit<TutorialFilter, 'status'>,
+    sort: TutorialSort,
+    page: PageRequest,
+  ): Promise<Page<TutorialRecord>>;
   findPublicById(id: number): Promise<TutorialRecord | null>;
-  list(filter: TutorialFilter, sort: TutorialSort, page: PageRequest): Promise<Page<TutorialRecord>>;
+  list(
+    filter: TutorialFilter,
+    sort: TutorialSort,
+    page: PageRequest,
+  ): Promise<Page<TutorialRecord>>;
   findById(id: number): Promise<TutorialRecord | null>;
   create(data: TutorialWrite & { authorId: number }): Promise<TutorialRecord>;
   /**
    * Applies a partial update. When `expectedUpdatedAt` is given the update only succeeds if
    * the record has not changed since; returns null on such a conflict.
    */
-  update(id: number, data: Partial<TutorialWrite>, expectedUpdatedAt?: Date): Promise<TutorialRecord | null>;
+  update(
+    id: number,
+    data: Partial<TutorialWrite>,
+    expectedUpdatedAt?: Date,
+  ): Promise<TutorialRecord | null>;
   delete(id: number): Promise<void>;
   counts(): Promise<TutorialCounts>;
 }

@@ -10,10 +10,15 @@
 import { parseArgs } from 'node:util';
 import { createInterface } from 'node:readline';
 import { createPrismaClient } from '../src/infrastructure/database/prisma.js';
-import { Argon2PasswordHasher, PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from '../src/shared/security/password-hasher.js';
+import {
+  Argon2PasswordHasher,
+  PASSWORD_MAX_LENGTH,
+  PASSWORD_MIN_LENGTH,
+} from '../src/shared/security/password-hasher.js';
 
 async function promptHidden(question: string): Promise<string> {
-  if (!process.stdin.isTTY) throw new Error('No TTY available: set MYTUTOR_ADMIN_PASSWORD instead.');
+  if (!process.stdin.isTTY)
+    throw new Error('No TTY available: set MYTUTOR_ADMIN_PASSWORD instead.');
   const rl = createInterface({ input: process.stdin, output: process.stdout, terminal: true });
   const output = rl as unknown as { _writeToOutput: (s: string) => void };
   let muted = false;
@@ -45,7 +50,8 @@ async function main() {
   const databaseUrl = process.env['DATABASE_URL'];
   if (!databaseUrl) throw new Error('DATABASE_URL must be set.');
 
-  const password = process.env['MYTUTOR_ADMIN_PASSWORD'] ?? (await promptHidden('New administrator password: '));
+  const password =
+    process.env['MYTUTOR_ADMIN_PASSWORD'] ?? (await promptHidden('New administrator password: '));
   if (password.length < PASSWORD_MIN_LENGTH || password.length > PASSWORD_MAX_LENGTH) {
     throw new Error(`Password must be ${PASSWORD_MIN_LENGTH}–${PASSWORD_MAX_LENGTH} characters.`);
   }
@@ -56,7 +62,10 @@ async function main() {
     const existing = await db.user.findUnique({ where: { username } });
     if (existing) {
       await db.$transaction([
-        db.user.update({ where: { id: existing.id }, data: { passwordHash, role: 'ADMIN', status: 'ACTIVE' } }),
+        db.user.update({
+          where: { id: existing.id },
+          data: { passwordHash, role: 'ADMIN', status: 'ACTIVE' },
+        }),
         db.session.deleteMany({ where: { userId: existing.id } }),
       ]);
       console.log(`Updated "${username}": role ADMIN, active, password reset, sessions revoked.`);

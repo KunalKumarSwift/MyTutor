@@ -1,5 +1,9 @@
 import type { Database } from '../database/prisma.js';
-import type { AuditEventRecord, AuditRepository, NewAuditEvent } from '../../modules/audit/audit.types.js';
+import type {
+  AuditEventRecord,
+  AuditRepository,
+  NewAuditEvent,
+} from '../../modules/audit/audit.types.js';
 
 export class PrismaAuditRepository implements AuditRepository {
   constructor(private readonly db: Database) {}

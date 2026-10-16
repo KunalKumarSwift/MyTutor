@@ -39,11 +39,15 @@ export interface ListParams {
   pageSize?: number;
 }
 
-const unwrap = <T,>(r: DataResponse<T>) => r.data;
+const unwrap = <T>(r: DataResponse<T>) => r.data;
 
 // ----- Dashboard -----
 export const useDashboard = () =>
-  useQuery({ queryKey: keys.dashboard, queryFn: ({ signal }) => api.get<DataResponse<DashboardDto>>('/admin/dashboard', undefined, signal).then(unwrap) });
+  useQuery({
+    queryKey: keys.dashboard,
+    queryFn: ({ signal }) =>
+      api.get<DataResponse<DashboardDto>>('/admin/dashboard', undefined, signal).then(unwrap),
+  });
 
 // ----- Tutorials -----
 export interface TutorialListParams extends ListParams {
@@ -54,14 +58,16 @@ export interface TutorialListParams extends ListParams {
 export const useAdminTutorials = (params: TutorialListParams) =>
   useQuery({
     queryKey: [...keys.tutorials, params],
-    queryFn: ({ signal }) => api.get<PaginatedResponse<TutorialDto>>('/admin/tutorials', { ...params }, signal),
+    queryFn: ({ signal }) =>
+      api.get<PaginatedResponse<TutorialDto>>('/admin/tutorials', { ...params }, signal),
     placeholderData: keepPreviousData,
   });
 
 export const useAdminTutorial = (id: number | null) =>
   useQuery({
     queryKey: keys.tutorial(id ?? 0),
-    queryFn: ({ signal }) => api.get<DataResponse<TutorialDto>>(`/admin/tutorials/${id}`, undefined, signal).then(unwrap),
+    queryFn: ({ signal }) =>
+      api.get<DataResponse<TutorialDto>>(`/admin/tutorials/${id}`, undefined, signal).then(unwrap),
     enabled: id !== null,
     staleTime: 0,
   });
@@ -78,7 +84,13 @@ function useInvalidateCatalogue() {
 export function useSaveTutorial() {
   const invalidate = useInvalidateCatalogue();
   return useMutation({
-    mutationFn: ({ id, input }: { id: number | null; input: CreateTutorialInput | UpdateTutorialInput }) =>
+    mutationFn: ({
+      id,
+      input,
+    }: {
+      id: number | null;
+      input: CreateTutorialInput | UpdateTutorialInput;
+    }) =>
       (id === null
         ? api.post<DataResponse<TutorialDto>>('/admin/tutorials', input)
         : api.patch<DataResponse<TutorialDto>>(`/admin/tutorials/${id}`, input)
@@ -89,7 +101,10 @@ export function useSaveTutorial() {
 
 export function useDeleteTutorial() {
   const invalidate = useInvalidateCatalogue();
-  return useMutation({ mutationFn: (id: number) => api.delete(`/admin/tutorials/${id}`), onSuccess: invalidate });
+  return useMutation({
+    mutationFn: (id: number) => api.delete(`/admin/tutorials/${id}`),
+    onSuccess: invalidate,
+  });
 }
 
 // ----- Categories & difficulty levels -----
@@ -99,7 +114,8 @@ export type ReferenceDto = CategoryDto | DifficultyLevelDto;
 export const useReferenceList = (kind: ReferenceKind, params: ListParams) =>
   useQuery({
     queryKey: [...keys.reference(kind), params],
-    queryFn: ({ signal }) => api.get<PaginatedResponse<ReferenceDto>>(`/admin/${kind}`, { ...params }, signal),
+    queryFn: ({ signal }) =>
+      api.get<PaginatedResponse<ReferenceDto>>(`/admin/${kind}`, { ...params }, signal),
     placeholderData: keepPreviousData,
   });
 
@@ -117,21 +133,26 @@ export function useSaveReference(kind: ReferenceKind) {
 
 export function useDeleteReference(kind: ReferenceKind) {
   const invalidate = useInvalidateCatalogue();
-  return useMutation({ mutationFn: (id: number) => api.delete(`/admin/${kind}/${id}`), onSuccess: invalidate });
+  return useMutation({
+    mutationFn: (id: number) => api.delete(`/admin/${kind}/${id}`),
+    onSuccess: invalidate,
+  });
 }
 
 // ----- Users -----
 export const useUsers = (params: ListParams) =>
   useQuery({
     queryKey: [...keys.users, params],
-    queryFn: ({ signal }) => api.get<PaginatedResponse<UserDto>>('/admin/users', { ...params }, signal),
+    queryFn: ({ signal }) =>
+      api.get<PaginatedResponse<UserDto>>('/admin/users', { ...params }, signal),
     placeholderData: keepPreviousData,
   });
 
 export const useUser = (id: number | null) =>
   useQuery({
     queryKey: keys.user(id ?? 0),
-    queryFn: ({ signal }) => api.get<DataResponse<UserDto>>(`/admin/users/${id}`, undefined, signal).then(unwrap),
+    queryFn: ({ signal }) =>
+      api.get<DataResponse<UserDto>>(`/admin/users/${id}`, undefined, signal).then(unwrap),
     enabled: id !== null,
     staleTime: 0,
   });
@@ -150,12 +171,18 @@ export function useSaveUser() {
 
 // ----- Account -----
 export const useProfile = () =>
-  useQuery({ queryKey: keys.profile, queryFn: ({ signal }) => api.get<DataResponse<ProfileDto>>('/profile', undefined, signal).then(unwrap), staleTime: 0 });
+  useQuery({
+    queryKey: keys.profile,
+    queryFn: ({ signal }) =>
+      api.get<DataResponse<ProfileDto>>('/profile', undefined, signal).then(unwrap),
+    staleTime: 0,
+  });
 
 export function useUpdateProfile() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (input: UpdateProfileInput) => api.put<DataResponse<ProfileDto>>('/profile', input).then(unwrap),
+    mutationFn: (input: UpdateProfileInput) =>
+      api.put<DataResponse<ProfileDto>>('/profile', input).then(unwrap),
     onSuccess: (profile) => {
       qc.setQueryData(keys.profile, profile);
       return qc.invalidateQueries({ queryKey: ['session'] });
@@ -164,7 +191,9 @@ export function useUpdateProfile() {
 }
 
 export const useChangePassword = () =>
-  useMutation({ mutationFn: (input: ChangePasswordInput) => api.post<void>('/auth/password', input) });
+  useMutation({
+    mutationFn: (input: ChangePasswordInput) => api.post<void>('/auth/password', input),
+  });
 
 // ----- Reports -----
 export interface ReportParams {
@@ -176,6 +205,11 @@ export interface ReportParams {
 export const useTutorialReport = (params: ReportParams) =>
   useQuery({
     queryKey: [...keys.report, params],
-    queryFn: ({ signal }) => api.get<PaginatedResponse<TutorialReportRowDto>>('/admin/reports/tutorials', { ...params, pageSize: 25 }, signal),
+    queryFn: ({ signal }) =>
+      api.get<PaginatedResponse<TutorialReportRowDto>>(
+        '/admin/reports/tutorials',
+        { ...params, pageSize: 25 },
+        signal,
+      ),
     placeholderData: keepPreviousData,
   });

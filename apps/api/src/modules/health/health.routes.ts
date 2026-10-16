@@ -8,7 +8,10 @@ const HealthSchema = Type.Object({
 export const healthRoutes: RoutePlugin = async (app, { container }) => {
   app.get(
     '/health',
-    { config: { rateLimit: false }, schema: { response: { 200: HealthSchema, 503: HealthSchema } } },
+    {
+      config: { rateLimit: false },
+      schema: { response: { 200: HealthSchema, 503: HealthSchema } },
+    },
     async (request, reply) => {
       try {
         await container.checkDatabase();

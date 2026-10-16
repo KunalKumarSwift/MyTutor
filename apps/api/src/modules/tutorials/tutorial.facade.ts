@@ -15,8 +15,17 @@ import type { AuditLogger } from '../audit/audit.types.js';
 import type { AuthenticatedActor } from '../auth/auth.types.js';
 import type { AuthorizationPolicy } from '../auth/authorization.policy.js';
 import type { ReferenceRepository } from '../reference-data/reference.types.js';
-import { toPublicTutorialDto, toPublicTutorialSummaryDto, toTutorialDto } from './tutorial.mapper.js';
-import type { TutorialFilter, TutorialRepository, TutorialSort, TutorialWrite } from './tutorial.types.js';
+import {
+  toPublicTutorialDto,
+  toPublicTutorialSummaryDto,
+  toTutorialDto,
+} from './tutorial.mapper.js';
+import type {
+  TutorialFilter,
+  TutorialRepository,
+  TutorialSort,
+  TutorialWrite,
+} from './tutorial.types.js';
 
 export interface TutorialQuery {
   search?: string;
@@ -46,7 +55,9 @@ export class TutorialFacade {
 
   // ----- Public -----
 
-  async listPublicTutorials(query: TutorialQuery): Promise<PaginatedResponse<PublicTutorialSummaryDto>> {
+  async listPublicTutorials(
+    query: TutorialQuery,
+  ): Promise<PaginatedResponse<PublicTutorialSummaryDto>> {
     const page = normalizePage(query.page, query.pageSize, 12);
     const result = await this.tutorials.listPublic(toFilter(query), query.sort ?? 'newest', page);
     return {
@@ -63,13 +74,19 @@ export class TutorialFacade {
 
   // ----- Management -----
 
-  async listTutorials(query: ManageTutorialQuery, actor: AuthenticatedActor): Promise<PaginatedResponse<TutorialDto>> {
+  async listTutorials(
+    query: ManageTutorialQuery,
+    actor: AuthenticatedActor,
+  ): Promise<PaginatedResponse<TutorialDto>> {
     this.policy.assert(actor, 'tutorials:manage');
     const page = normalizePage(query.page, query.pageSize, 20);
     const filter = toFilter(query);
     if (query.status) filter.status = query.status;
     const result = await this.tutorials.list(filter, query.sort ?? 'newest', page);
-    return { data: result.items.map(toTutorialDto), pagination: buildPagination(page, result.totalItems) };
+    return {
+      data: result.items.map(toTutorialDto),
+      pagination: buildPagination(page, result.totalItems),
+    };
   }
 
   async getTutorial(id: number, actor: AuthenticatedActor): Promise<TutorialDto> {
@@ -79,7 +96,10 @@ export class TutorialFacade {
     return toTutorialDto(tutorial);
   }
 
-  async createTutorial(input: CreateTutorialInput, actor: AuthenticatedActor): Promise<TutorialDto> {
+  async createTutorial(
+    input: CreateTutorialInput,
+    actor: AuthenticatedActor,
+  ): Promise<TutorialDto> {
     this.policy.assert(actor, 'tutorials:manage');
     await this.assertReferencesAssignable(input.categoryId, input.difficultyLevelId);
     const data: TutorialWrite = {
@@ -102,15 +122,22 @@ export class TutorialFacade {
     return toTutorialDto(created);
   }
 
-  async updateTutorial(id: number, input: UpdateTutorialInput, actor: AuthenticatedActor): Promise<TutorialDto> {
+  async updateTutorial(
+    id: number,
+    input: UpdateTutorialInput,
+    actor: AuthenticatedActor,
+  ): Promise<TutorialDto> {
     this.policy.assert(actor, 'tutorials:manage');
     const existing = await this.tutorials.findById(id);
     if (!existing) throw notFound('Tutorial');
 
     // Only newly assigned references must be active; keeping an existing (now inactive) one is fine.
     await this.assertReferencesAssignable(
-      input.categoryId !== undefined && input.categoryId !== existing.category.id ? input.categoryId : undefined,
-      input.difficultyLevelId !== undefined && input.difficultyLevelId !== existing.difficultyLevel.id
+      input.categoryId !== undefined && input.categoryId !== existing.category.id
+        ? input.categoryId
+        : undefined,
+      input.difficultyLevelId !== undefined &&
+        input.difficultyLevelId !== existing.difficultyLevel.id
         ? input.difficultyLevelId
         : undefined,
     );
@@ -121,7 +148,8 @@ export class TutorialFacade {
       patch.description = cleanMultiline(input.description) ?? '';
       assertDescription(patch.description);
     }
-    if (input.prerequisites !== undefined) patch.prerequisites = cleanMultiline(input.prerequisites);
+    if (input.prerequisites !== undefined)
+      patch.prerequisites = cleanMultiline(input.prerequisites);
     if (input.status !== undefined) patch.status = input.status;
     if (input.categoryId !== undefined) patch.categoryId = input.categoryId;
     if (input.difficultyLevelId !== undefined) patch.difficultyLevelId = input.difficultyLevelId;
@@ -160,20 +188,32 @@ export class TutorialFacade {
     });
   }
 
-  private async assertReferencesAssignable(categoryId?: number, difficultyLevelId?: number): Promise<void> {
+  private async assertReferencesAssignable(
+    categoryId?: number,
+    difficultyLevelId?: number,
+  ): Promise<void> {
     const [category, level] = await Promise.all([
       categoryId === undefined ? null : this.categories.findById(categoryId),
       difficultyLevelId === undefined ? null : this.difficultyLevels.findById(difficultyLevelId),
     ]);
     const details: ErrorDetail[] = [];
     if (categoryId !== undefined) {
-      if (!category) details.push({ field: 'categoryId', message: 'Selected category does not exist.' });
-      else if (category.status !== 'ACTIVE') details.push({ field: 'categoryId', message: 'Selected category is inactive.' });
+      if (!category)
+        details.push({ field: 'categoryId', message: 'Selected category does not exist.' });
+      else if (category.status !== 'ACTIVE')
+        details.push({ field: 'categoryId', message: 'Selected category is inactive.' });
     }
     if (difficultyLevelId !== undefined) {
-      if (!level) details.push({ field: 'difficultyLevelId', message: 'Selected difficulty level does not exist.' });
+      if (!level)
+        details.push({
+          field: 'difficultyLevelId',
+          message: 'Selected difficulty level does not exist.',
+        });
       else if (level.status !== 'ACTIVE') {
-        details.push({ field: 'difficultyLevelId', message: 'Selected difficulty level is inactive.' });
+        details.push({
+          field: 'difficultyLevelId',
+          message: 'Selected difficulty level is inactive.',
+        });
       }
     }
     if (details.length > 0) throw invalid(details);
@@ -189,5 +229,6 @@ function toFilter(query: TutorialQuery): TutorialFilter {
 }
 
 function assertDescription(description: string): void {
-  if (description === '') throw invalid([{ field: 'description', message: 'Description is required.' }]);
+  if (description === '')
+    throw invalid([{ field: 'description', message: 'Description is required.' }]);
 }

@@ -78,7 +78,11 @@ export class ReferenceDataService {
     return created;
   }
 
-  async update(id: number, input: Partial<ReferenceInput>, actor: AuthenticatedActor): Promise<ReferenceRecord> {
+  async update(
+    id: number,
+    input: Partial<ReferenceInput>,
+    actor: AuthenticatedActor,
+  ): Promise<ReferenceRecord> {
     this.policy.assert(actor, this.permission);
     await this.require(id);
     const patch: Partial<ReferenceWrite> = {};
@@ -125,7 +129,10 @@ export class ReferenceDataService {
     const clash = await this.repository.findByTitleKey(key);
     if (clash && clash.id !== exceptId) {
       throw conflict(`${this.kind.label} already exists.`, [
-        { field: 'title', message: `A ${this.kind.label.toLowerCase()} with this title already exists.` },
+        {
+          field: 'title',
+          message: `A ${this.kind.label.toLowerCase()} with this title already exists.`,
+        },
       ]);
     }
   }

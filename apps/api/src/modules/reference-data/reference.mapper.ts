@@ -23,7 +23,12 @@ export function toDifficultyLevelDto(r: ReferenceRecord): DifficultyLevelDto {
 }
 
 export function toPublicCategoryDto(r: PublicReferenceRecord): PublicCategoryDto {
-  return { id: r.id, title: r.title, description: r.description, tutorialCount: r.publicTutorialCount };
+  return {
+    id: r.id,
+    title: r.title,
+    description: r.description,
+    tutorialCount: r.publicTutorialCount,
+  };
 }
 
 export function toPublicDifficultyLevelDto(r: PublicReferenceRecord): PublicDifficultyLevelDto {

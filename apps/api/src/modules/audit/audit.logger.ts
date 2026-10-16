@@ -15,7 +15,10 @@ export class RepositoryAuditLogger implements AuditLogger {
     try {
       await this.repository.record({ ...event, summary: event.summary.slice(0, 300) });
     } catch (error) {
-      this.logger.error({ err: error, audit: { action: event.action, entityType: event.entityType } }, 'Failed to record audit event');
+      this.logger.error(
+        { err: error, audit: { action: event.action, entityType: event.entityType } },
+        'Failed to record audit event',
+      );
     }
   }
 }

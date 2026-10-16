@@ -22,8 +22,11 @@ const sizes: Record<Size, string> = {
   lg: 'h-12 px-6 text-base',
 };
 
-export const buttonClasses = (variant: Variant = 'primary', size: Size = 'md', className?: string) =>
-  cn(base, variants[variant], sizes[size], className);
+export const buttonClasses = (
+  variant: Variant = 'primary',
+  size: Size = 'md',
+  className?: string,
+) => cn(base, variants[variant], sizes[size], className);
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: Variant;
@@ -33,7 +36,17 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
-  { variant = 'primary', size = 'md', loading = false, icon, className, children, disabled, type = 'button', ...rest },
+  {
+    variant = 'primary',
+    size = 'md',
+    loading = false,
+    icon,
+    className,
+    children,
+    disabled,
+    type = 'button',
+    ...rest
+  },
   ref,
 ) {
   return (
@@ -57,9 +70,23 @@ interface ButtonLinkProps extends LinkProps {
   icon?: ReactNode;
 }
 
-export function ButtonLink({ variant = 'primary', size = 'md', icon, className, children, ...rest }: ButtonLinkProps) {
+export function ButtonLink({
+  variant = 'primary',
+  size = 'md',
+  icon,
+  className,
+  children,
+  ...rest
+}: ButtonLinkProps) {
   return (
-    <Link className={buttonClasses(variant, size, typeof className === 'string' ? className : undefined)} {...rest}>
+    <Link
+      className={buttonClasses(
+        variant,
+        size,
+        typeof className === 'string' ? className : undefined,
+      )}
+      {...rest}
+    >
       {icon}
       {children}
     </Link>

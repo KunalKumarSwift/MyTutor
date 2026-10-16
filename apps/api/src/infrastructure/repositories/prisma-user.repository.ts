@@ -35,7 +35,11 @@ export class PrismaUserRepository implements UserRepository {
         }
       : {};
     const [items, totalItems] = await Promise.all([
-      this.db.user.findMany({ where, orderBy: [{ name: 'asc' }, { id: 'asc' }], ...toSkipTake(page) }),
+      this.db.user.findMany({
+        where,
+        orderBy: [{ name: 'asc' }, { id: 'asc' }],
+        ...toSkipTake(page),
+      }),
       this.db.user.count({ where }),
     ]);
     return { items: items.map(toRecord), totalItems };
@@ -57,7 +61,10 @@ export class PrismaUserRepository implements UserRepository {
     try {
       const updated = await this.db.user.update({
         where: { id },
-        data: { ...rest, ...(dateOfBirth !== undefined ? { dateOfBirth: toDbDate(dateOfBirth) } : {}) },
+        data: {
+          ...rest,
+          ...(dateOfBirth !== undefined ? { dateOfBirth: toDbDate(dateOfBirth) } : {}),
+        },
       });
       return toRecord(updated);
     } catch (error) {

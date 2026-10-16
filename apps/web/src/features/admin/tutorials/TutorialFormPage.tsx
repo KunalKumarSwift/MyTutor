@@ -32,7 +32,14 @@ interface FormValues {
   status: RecordStatus;
 }
 
-const EMPTY: FormValues = { title: '', categoryId: '', difficultyLevelId: '', prerequisites: '', description: '', status: 'ACTIVE' };
+const EMPTY: FormValues = {
+  title: '',
+  categoryId: '',
+  difficultyLevelId: '',
+  prerequisites: '',
+  description: '',
+  status: 'ACTIVE',
+};
 
 const fromTutorial = (t: TutorialDto): FormValues => ({
   title: t.title,
@@ -46,12 +53,15 @@ const fromTutorial = (t: TutorialDto): FormValues => ({
 export function validateTutorial(values: FormValues): Record<string, string> {
   const errors: Record<string, string> = {};
   if (!values.title.trim()) errors['title'] = 'Title is required.';
-  else if (values.title.trim().length > 200) errors['title'] = 'Title must be 200 characters or fewer.';
+  else if (values.title.trim().length > 200)
+    errors['title'] = 'Title must be 200 characters or fewer.';
   if (!values.categoryId) errors['categoryId'] = 'Choose a category.';
   if (!values.difficultyLevelId) errors['difficultyLevelId'] = 'Choose a difficulty level.';
   if (!values.description.trim()) errors['description'] = 'Description is required.';
-  else if (values.description.length > 20_000) errors['description'] = 'Description must be 20,000 characters or fewer.';
-  if (values.prerequisites.length > 2000) errors['prerequisites'] = 'Prerequisites must be 2,000 characters or fewer.';
+  else if (values.description.length > 20_000)
+    errors['description'] = 'Description must be 20,000 characters or fewer.';
+  if (values.prerequisites.length > 2000)
+    errors['prerequisites'] = 'Prerequisites must be 2,000 characters or fewer.';
   return errors;
 }
 
@@ -81,20 +91,25 @@ export default function TutorialFormPage() {
     }
   }, [existing.data]);
 
-  const dirty = useMemo(() => JSON.stringify(values) !== JSON.stringify(baseline), [values, baseline]);
+  const dirty = useMemo(
+    () => JSON.stringify(values) !== JSON.stringify(baseline),
+    [values, baseline],
+  );
   const blocker = useUnsavedChanges(dirty && !save.isPending);
 
   // Options are active records, plus the currently assigned one if it has since been deactivated.
   const categoryOptions = useMemo(() => {
     const list = (categories.data ?? []).map((c) => ({ id: c.id, title: c.title }));
     const current = existing.data?.category;
-    if (current && !list.some((c) => c.id === current.id)) list.push({ id: current.id, title: `${current.title} (inactive)` });
+    if (current && !list.some((c) => c.id === current.id))
+      list.push({ id: current.id, title: `${current.title} (inactive)` });
     return list;
   }, [categories.data, existing.data]);
   const levelOptions = useMemo(() => {
     const list = (levels.data ?? []).map((l) => ({ id: l.id, title: l.title }));
     const current = existing.data?.difficultyLevel;
-    if (current && !list.some((l) => l.id === current.id)) list.push({ id: current.id, title: `${current.title} (inactive)` });
+    if (current && !list.some((l) => l.id === current.id))
+      list.push({ id: current.id, title: `${current.title} (inactive)` });
     return list;
   }, [levels.data, existing.data]);
 
@@ -123,13 +138,23 @@ export default function TutorialFormPage() {
     try {
       const saved = await save.mutateAsync({
         id,
-        input: isEdit ? { ...input, ...(existing.data ? { expectedUpdatedAt: existing.data.updatedAt } : {}) } : input,
+        input: isEdit
+          ? { ...input, ...(existing.data ? { expectedUpdatedAt: existing.data.updatedAt } : {}) }
+          : input,
       });
       toast.success(isEdit ? 'Tutorial updated.' : `Created “${saved.title}”.`);
       setBaseline(values);
       if (addAnother) {
-        setValues({ ...EMPTY, categoryId: values.categoryId, difficultyLevelId: values.difficultyLevelId });
-        setBaseline({ ...EMPTY, categoryId: values.categoryId, difficultyLevelId: values.difficultyLevelId });
+        setValues({
+          ...EMPTY,
+          categoryId: values.categoryId,
+          difficultyLevelId: values.difficultyLevelId,
+        });
+        setBaseline({
+          ...EMPTY,
+          categoryId: values.categoryId,
+          difficultyLevelId: values.difficultyLevelId,
+        });
         titleRef.current?.focus();
       } else {
         // Defer so the blocker sees the clean state before navigating.
@@ -145,31 +170,62 @@ export default function TutorialFormPage() {
     }
   }
 
-  if (isEdit && (!Number.isInteger(id) || (existing.error instanceof ApiError && existing.error.status === 404))) {
-    return <EmptyState title="Tutorial not found" description="It may have been deleted." action={<ButtonLink to="/admin/tutorials">Back to tutorials</ButtonLink>} />;
+  if (
+    isEdit &&
+    (!Number.isInteger(id) || (existing.error instanceof ApiError && existing.error.status === 404))
+  ) {
+    return (
+      <EmptyState
+        title="Tutorial not found"
+        description="It may have been deleted."
+        action={<ButtonLink to="/admin/tutorials">Back to tutorials</ButtonLink>}
+      />
+    );
   }
-  if (isEdit && existing.isError) return <ErrorState error={existing.error} onRetry={() => void existing.refetch()} />;
+  if (isEdit && existing.isError)
+    return <ErrorState error={existing.error} onRetry={() => void existing.refetch()} />;
   if (isEdit && existing.isPending) return <LoadingState />;
 
   return (
     <div className="space-y-6">
       <PageHeader
         title={isEdit ? 'Edit tutorial' : 'New tutorial'}
-        description={isEdit ? `Last updated ${formatDateTime(existing.data!.updatedAt)} · created by ${existing.data!.author.name}` : 'Add a tutorial to the catalogue.'}
+        description={
+          isEdit
+            ? `Last updated ${formatDateTime(existing.data!.updatedAt)} · created by ${existing.data!.author.name}`
+            : 'Add a tutorial to the catalogue.'
+        }
       />
-      <form noValidate onSubmit={(e) => void submit(e, false)} className="space-y-6 rounded-[var(--radius-card)] bg-surface p-5 ring-1 ring-line sm:p-8">
+      <form
+        noValidate
+        onSubmit={(e) => void submit(e, false)}
+        className="space-y-6 rounded-[var(--radius-card)] bg-surface p-5 ring-1 ring-line sm:p-8"
+      >
         {formError && (
-          <div role="alert" className="rounded-lg bg-danger-50 px-4 py-3 text-sm font-medium text-danger-700">
+          <div
+            role="alert"
+            className="rounded-lg bg-danger-50 px-4 py-3 text-sm font-medium text-danger-700"
+          >
             {formError}
             {error409Hint(save.error)}
           </div>
         )}
         <Field label="Tutorial title" error={errors['title']} required>
-          <TextInput id="field-title" ref={titleRef} value={values.title} maxLength={200} onChange={(e) => setField('title', e.target.value)} />
+          <TextInput
+            id="field-title"
+            ref={titleRef}
+            value={values.title}
+            maxLength={200}
+            onChange={(e) => setField('title', e.target.value)}
+          />
         </Field>
         <div className="grid gap-6 sm:grid-cols-2">
           <Field label="Category" error={errors['categoryId']} required>
-            <Select id="field-categoryId" value={values.categoryId} onChange={(e) => setField('categoryId', e.target.value)}>
+            <Select
+              id="field-categoryId"
+              value={values.categoryId}
+              onChange={(e) => setField('categoryId', e.target.value)}
+            >
               <option value="">Select a category</option>
               {categoryOptions.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -179,7 +235,11 @@ export default function TutorialFormPage() {
             </Select>
           </Field>
           <Field label="Difficulty level" error={errors['difficultyLevelId']} required>
-            <Select id="field-difficultyLevelId" value={values.difficultyLevelId} onChange={(e) => setField('difficultyLevelId', e.target.value)}>
+            <Select
+              id="field-difficultyLevelId"
+              value={values.difficultyLevelId}
+              onChange={(e) => setField('difficultyLevelId', e.target.value)}
+            >
               <option value="">Select a level</option>
               {levelOptions.map((l) => (
                 <option key={l.id} value={l.id}>
@@ -189,11 +249,31 @@ export default function TutorialFormPage() {
             </Select>
           </Field>
         </div>
-        <Field label="Prerequisites" error={errors['prerequisites']} hint="What learners should know first. Optional.">
-          <TextArea id="field-prerequisites" rows={3} value={values.prerequisites} maxLength={2000} onChange={(e) => setField('prerequisites', e.target.value)} />
+        <Field
+          label="Prerequisites"
+          error={errors['prerequisites']}
+          hint="What learners should know first. Optional."
+        >
+          <TextArea
+            id="field-prerequisites"
+            rows={3}
+            value={values.prerequisites}
+            maxLength={2000}
+            onChange={(e) => setField('prerequisites', e.target.value)}
+          />
         </Field>
-        <Field label="Description" error={errors['description']} required hint="Plain text. Leave a blank line between paragraphs.">
-          <TextArea id="field-description" rows={12} value={values.description} onChange={(e) => setField('description', e.target.value)} />
+        <Field
+          label="Description"
+          error={errors['description']}
+          required
+          hint="Plain text. Leave a blank line between paragraphs."
+        >
+          <TextArea
+            id="field-description"
+            rows={12}
+            value={values.description}
+            onChange={(e) => setField('description', e.target.value)}
+          />
         </Field>
         <RadioGroup<RecordStatus>
           legend="Status"
@@ -211,7 +291,11 @@ export default function TutorialFormPage() {
             Cancel
           </ButtonLink>
           {!isEdit && (
-            <Button variant="secondary" disabled={save.isPending} onClick={(e) => void submit(e, true)}>
+            <Button
+              variant="secondary"
+              disabled={save.isPending}
+              onClick={(e) => void submit(e, true)}
+            >
               Save &amp; add another
             </Button>
           )}

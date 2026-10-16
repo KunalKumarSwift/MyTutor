@@ -36,14 +36,22 @@ export const authRoutes: RoutePlugin = async (app, { config, container }) => {
           hook: 'preHandler',
           keyGenerator: (request) => {
             const body = request.body as { username?: unknown } | undefined;
-            const username = typeof body?.username === 'string' ? normalizeUsername(body.username) : '';
+            const username =
+              typeof body?.username === 'string' ? normalizeUsername(body.username) : '';
             return `login:${request.ip}:${username}`;
           },
           errorResponseBuilder: () =>
-            new AppError('RATE_LIMITED', 429, 'Too many sign-in attempts. Please wait a few minutes and try again.'),
+            new AppError(
+              'RATE_LIMITED',
+              429,
+              'Too many sign-in attempts. Please wait a few minutes and try again.',
+            ),
         },
       },
-      schema: { body: LoginBody, response: { 200: DataEnvelope(SessionSchema), ...errorResponses } },
+      schema: {
+        body: LoginBody,
+        response: { 200: DataEnvelope(SessionSchema), ...errorResponses },
+      },
     },
     async (request, reply) => {
       const result = await container.auth.login(request.body.username, request.body.password);
@@ -55,7 +63,10 @@ export const authRoutes: RoutePlugin = async (app, { config, container }) => {
 
   app.post(
     '/auth/logout',
-    { preHandler: app.requireAuth, schema: { response: { ...noContent, 401: errorResponses[401], 403: errorResponses[403] } } },
+    {
+      preHandler: app.requireAuth,
+      schema: { response: { ...noContent, 401: errorResponses[401], 403: errorResponses[403] } },
+    },
     async (request, reply) => {
       await container.auth.logout(actorOf(request));
       app.clearSessionCookie(reply);
@@ -65,13 +76,21 @@ export const authRoutes: RoutePlugin = async (app, { config, container }) => {
 
   app.get(
     '/auth/me',
-    { preHandler: app.requireAuth, schema: { response: { 200: DataEnvelope(SessionSchema), 401: errorResponses[401] } } },
+    {
+      preHandler: app.requireAuth,
+      schema: { response: { 200: DataEnvelope(SessionSchema), 401: errorResponses[401] } },
+    },
     async (request, reply) => {
       const actor = actorOf(request);
       reply.header('cache-control', 'no-store');
       return {
         data: {
-          user: toPrincipalDto({ id: actor.userId, username: actor.username, name: actor.name, role: actor.role }),
+          user: toPrincipalDto({
+            id: actor.userId,
+            username: actor.username,
+            name: actor.name,
+            role: actor.role,
+          }),
           csrfToken: container.auth.csrfTokenFor(request.sessionToken!),
         },
       };
@@ -91,7 +110,12 @@ export const authRoutes: RoutePlugin = async (app, { config, container }) => {
       }
       return {
         data: {
-          user: toPrincipalDto({ id: actor.userId, username: actor.username, name: actor.name, role: actor.role }),
+          user: toPrincipalDto({
+            id: actor.userId,
+            username: actor.username,
+            name: actor.name,
+            role: actor.role,
+          }),
           csrfToken: container.auth.csrfTokenFor(request.sessionToken),
         },
       };
@@ -100,7 +124,10 @@ export const authRoutes: RoutePlugin = async (app, { config, container }) => {
 
   app.post(
     '/auth/password',
-    { preHandler: app.requireAuth, schema: { body: ChangePasswordBody, response: { ...noContent, ...errorResponses } } },
+    {
+      preHandler: app.requireAuth,
+      schema: { body: ChangePasswordBody, response: { ...noContent, ...errorResponses } },
+    },
     async (request, reply) => {
       await container.users.changePassword(request.body, actorOf(request));
       return reply.status(204).send(null);

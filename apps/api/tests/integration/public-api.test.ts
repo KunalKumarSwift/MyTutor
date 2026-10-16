@@ -1,5 +1,11 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { createTestApp, resetDatabase, seedFixtures, type Fixtures, type TestContext } from './helpers.js';
+import {
+  createTestApp,
+  resetDatabase,
+  seedFixtures,
+  type Fixtures,
+  type TestContext,
+} from './helpers.js';
 
 describe('Public API', () => {
   let ctx: TestContext;
@@ -39,9 +45,15 @@ describe('Public API', () => {
     const search = (await get('/api/v1/tutorials?search=html')).json();
     expect(search.data).toHaveLength(1);
     const sorted = (await get('/api/v1/tutorials?sort=title')).json();
-    expect(sorted.data.map((t: { title: string }) => t.title)).toEqual(['Advanced SQL', 'HTML Basics']);
+    expect(sorted.data.map((t: { title: string }) => t.title)).toEqual([
+      'Advanced SQL',
+      'HTML Basics',
+    ]);
     const empty = (await get('/api/v1/tutorials?search=nothing-matches')).json();
-    expect(empty).toEqual({ data: [], pagination: { page: 1, pageSize: 12, totalItems: 0, totalPages: 0 } });
+    expect(empty).toEqual({
+      data: [],
+      pagination: { page: 1, pageSize: 12, totalItems: 0, totalPages: 0 },
+    });
   });
 
   it('paginates and rejects oversized pages', async () => {
@@ -54,8 +66,17 @@ describe('Public API', () => {
   it('returns tutorial details, and 404 for hidden or missing tutorials', async () => {
     const res = await get(`/api/v1/tutorials/${f.tutorials.html}`);
     expect(res.statusCode).toBe(200);
-    expect(res.json().data).toMatchObject({ title: 'HTML Basics', description: 'HTML Basics body text', category: { title: 'Web' } });
-    for (const id of [f.tutorials.draft, f.tutorials.inRetiredCategory, f.tutorials.inHiddenLevel, 999_999]) {
+    expect(res.json().data).toMatchObject({
+      title: 'HTML Basics',
+      description: 'HTML Basics body text',
+      category: { title: 'Web' },
+    });
+    for (const id of [
+      f.tutorials.draft,
+      f.tutorials.inRetiredCategory,
+      f.tutorials.inHiddenLevel,
+      999_999,
+    ]) {
       const hidden = await get(`/api/v1/tutorials/${id}`);
       expect(hidden.statusCode).toBe(404);
       expect(hidden.json().error.code).toBe('NOT_FOUND');
@@ -66,7 +87,10 @@ describe('Public API', () => {
     expect((await get('/api/v1/tutorials/abc')).statusCode).toBe(400);
     const res = await get('/api/v1/tutorials?evil=1');
     expect(res.statusCode).toBe(400);
-    expect(res.json().error).toMatchObject({ code: 'VALIDATION_ERROR', details: [{ field: 'evil' }] });
+    expect(res.json().error).toMatchObject({
+      code: 'VALIDATION_ERROR',
+      details: [{ field: 'evil' }],
+    });
   });
 
   it('lists active categories with public tutorial counts and ordered difficulty levels', async () => {

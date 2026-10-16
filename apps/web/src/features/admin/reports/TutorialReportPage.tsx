@@ -1,6 +1,17 @@
 import { useState, type FormEvent } from 'react';
 import { useSearchParams } from 'react-router';
-import { Button, DataTable, EmptyState, ErrorState, Field, LoadingState, PageHeader, Pagination, StatusBadge, TextInput } from '../../../components/ui';
+import {
+  Button,
+  DataTable,
+  EmptyState,
+  ErrorState,
+  Field,
+  LoadingState,
+  PageHeader,
+  Pagination,
+  StatusBadge,
+  TextInput,
+} from '../../../components/ui';
 import { useDocumentTitle } from '../../../hooks/useDocumentTitle';
 import { formatDate, pluralize } from '../../../lib/format';
 import { useTutorialReport } from '../api';
@@ -33,13 +44,28 @@ export default function TutorialReportPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Tutorial report" description="Tutorials with their author, category and difficulty level, optionally limited to a creation-date range." />
-      <form onSubmit={apply} noValidate className="grid items-end gap-4 rounded-[var(--radius-card)] bg-surface p-4 ring-1 ring-line sm:grid-cols-[1fr_1fr_auto_auto]">
+      <PageHeader
+        title="Tutorial report"
+        description="Tutorials with their author, category and difficulty level, optionally limited to a creation-date range."
+      />
+      <form
+        onSubmit={apply}
+        noValidate
+        className="grid items-end gap-4 rounded-[var(--radius-card)] bg-surface p-4 ring-1 ring-line sm:grid-cols-[1fr_1fr_auto_auto]"
+      >
         <Field label="From" error={undefined}>
-          <TextInput type="date" value={range.from} onChange={(e) => setRange({ ...range, from: e.target.value })} />
+          <TextInput
+            type="date"
+            value={range.from}
+            onChange={(e) => setRange({ ...range, from: e.target.value })}
+          />
         </Field>
         <Field label="To" error={error ?? undefined}>
-          <TextInput type="date" value={range.to} onChange={(e) => setRange({ ...range, to: e.target.value })} />
+          <TextInput
+            type="date"
+            value={range.to}
+            onChange={(e) => setRange({ ...range, to: e.target.value })}
+          />
         </Field>
         <Button type="submit">Apply</Button>
         <Button
@@ -71,7 +97,10 @@ export default function TutorialReportPage() {
             rows={report.data.data}
             rowKey={(r) => r.tutorialId}
             columns={[
-              { header: 'Tutorial', cell: (r) => <span className="font-semibold">{r.tutorialTitle}</span> },
+              {
+                header: 'Tutorial',
+                cell: (r) => <span className="font-semibold">{r.tutorialTitle}</span>,
+              },
               {
                 header: 'Author',
                 cell: (r) => (
@@ -83,8 +112,15 @@ export default function TutorialReportPage() {
               },
               { header: 'Category', cell: (r) => r.category, hideOnMobile: true },
               { header: 'Level', cell: (r) => r.difficultyLevel, hideOnMobile: true },
-              { header: 'Status', cell: (r) => <StatusBadge status={r.tutorialStatus} />, hideOnMobile: true },
-              { header: 'Created', cell: (r) => <time dateTime={r.createdAt}>{formatDate(r.createdAt)}</time> },
+              {
+                header: 'Status',
+                cell: (r) => <StatusBadge status={r.tutorialStatus} />,
+                hideOnMobile: true,
+              },
+              {
+                header: 'Created',
+                cell: (r) => <time dateTime={r.createdAt}>{formatDate(r.createdAt)}</time>,
+              },
             ]}
           />
           <Pagination

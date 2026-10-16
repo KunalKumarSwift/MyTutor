@@ -14,8 +14,11 @@ export function mockApi(handler: Handler) {
     const url = new URL(String(input), 'http://localhost');
     calls.push({ url, init });
     const result =
-      url.pathname === '/api/v1/auth/session' && !handler(url, init) ? { body: { data: null } } : handler(url, init);
-    if (!result) throw new Error(`Unhandled request: ${init.method ?? 'GET'} ${url.pathname}${url.search}`);
+      url.pathname === '/api/v1/auth/session' && !handler(url, init)
+        ? { body: { data: null } }
+        : handler(url, init);
+    if (!result)
+      throw new Error(`Unhandled request: ${init.method ?? 'GET'} ${url.pathname}${url.search}`);
     const status = result.status ?? 200;
     return new Response(status === 204 ? null : JSON.stringify(result.body ?? {}), {
       status,
@@ -27,7 +30,9 @@ export function mockApi(handler: Handler) {
 }
 
 export function renderRoutes(routes: RouteObject[], initialEntries: string[] = ['/']) {
-  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
   const router = createMemoryRouter(routes, { initialEntries });
   const utils = render(
     <QueryClientProvider client={queryClient}>
@@ -41,9 +46,23 @@ export function renderRoutes(routes: RouteObject[], initialEntries: string[] = [
   return { ...utils, router, queryClient };
 }
 
-export const page = <T,>(data: T[], overrides: Partial<{ page: number; pageSize: number; totalItems: number; totalPages: number }> = {}) => ({
+export const page = <T,>(
+  data: T[],
+  overrides: Partial<{
+    page: number;
+    pageSize: number;
+    totalItems: number;
+    totalPages: number;
+  }> = {},
+) => ({
   data,
-  pagination: { page: 1, pageSize: 12, totalItems: data.length, totalPages: data.length ? 1 : 0, ...overrides },
+  pagination: {
+    page: 1,
+    pageSize: 12,
+    totalItems: data.length,
+    totalPages: data.length ? 1 : 0,
+    ...overrides,
+  },
 });
 
 export const tutorialSummary = (id: number, title: string) => ({

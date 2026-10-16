@@ -23,7 +23,13 @@ import {
 import { useDocumentTitle } from '../../../hooks/useDocumentTitle';
 import { ApiError } from '../../../lib/api';
 import { pluralize } from '../../../lib/format';
-import { useDeleteReference, useReferenceList, useSaveReference, type ReferenceDto, type ReferenceKind } from '../api';
+import {
+  useDeleteReference,
+  useReferenceList,
+  useSaveReference,
+  type ReferenceDto,
+  type ReferenceKind,
+} from '../api';
 import { SearchBox } from '../SearchBox';
 import { useListParams } from '../useListParams';
 
@@ -37,12 +43,14 @@ const COPY: Record<ReferenceKind, Copy> = {
   categories: {
     title: 'Categories',
     singular: 'category',
-    description: 'Group tutorials by subject. Inactive categories and their tutorials are hidden from the public.',
+    description:
+      'Group tutorials by subject. Inactive categories and their tutorials are hidden from the public.',
   },
   'difficulty-levels': {
     title: 'Difficulty levels',
     singular: 'difficulty level',
-    description: 'Rate tutorials by difficulty. Sort order controls how levels are listed (lowest first).',
+    description:
+      'Rate tutorials by difficulty. Sort order controls how levels are listed (lowest first).',
   },
 };
 
@@ -54,7 +62,8 @@ interface FormState {
   sortOrder: string;
 }
 
-const hasSortOrder = (r: ReferenceDto): r is ReferenceDto & { sortOrder: number } => 'sortOrder' in r;
+const hasSortOrder = (r: ReferenceDto): r is ReferenceDto & { sortOrder: number } =>
+  'sortOrder' in r;
 
 export default function ReferenceManagePage({ kind }: { kind: ReferenceKind }) {
   const copy = COPY[kind];
@@ -62,7 +71,12 @@ export default function ReferenceManagePage({ kind }: { kind: ReferenceKind }) {
   useDocumentTitle(copy.title);
   const toast = useToast();
   const { values, set } = useListParams();
-  const list = useReferenceList(kind, { search: values.search || undefined, status: values.status, page: values.page, pageSize: 20 });
+  const list = useReferenceList(kind, {
+    search: values.search || undefined,
+    status: values.status,
+    page: values.page,
+    pageSize: 20,
+  });
   const save = useSaveReference(kind);
   const remove = useDeleteReference(kind);
 
@@ -76,7 +90,13 @@ export default function ReferenceManagePage({ kind }: { kind: ReferenceKind }) {
     setFormError(null);
     setForm(
       record
-        ? { id: record.id, title: record.title, description: record.description ?? '', status: record.status, sortOrder: String(hasSortOrder(record) ? record.sortOrder : 0) }
+        ? {
+            id: record.id,
+            title: record.title,
+            description: record.description ?? '',
+            status: record.status,
+            sortOrder: String(hasSortOrder(record) ? record.sortOrder : 0),
+          }
         : { id: null, title: '', description: '', status: 'ACTIVE', sortOrder: '0' },
     );
   };
@@ -87,9 +107,11 @@ export default function ReferenceManagePage({ kind }: { kind: ReferenceKind }) {
     const next: Record<string, string> = {};
     if (!form.title.trim()) next['title'] = 'Title is required.';
     if (form.title.length > 100) next['title'] = 'Title must be 100 characters or fewer.';
-    if (form.description.length > 1000) next['description'] = 'Description must be 1,000 characters or fewer.';
+    if (form.description.length > 1000)
+      next['description'] = 'Description must be 1,000 characters or fewer.';
     const sortOrder = Number(form.sortOrder);
-    if (isLevel && (!Number.isInteger(sortOrder) || sortOrder < 0 || sortOrder > 1000)) next['sortOrder'] = 'Enter a whole number from 0 to 1000.';
+    if (isLevel && (!Number.isInteger(sortOrder) || sortOrder < 0 || sortOrder > 1000))
+      next['sortOrder'] = 'Enter a whole number from 0 to 1000.';
     setErrors(next);
     if (Object.keys(next).length) return;
 
@@ -103,7 +125,11 @@ export default function ReferenceManagePage({ kind }: { kind: ReferenceKind }) {
           ...(isLevel ? { sortOrder } : {}),
         },
       });
-      toast.success(form.id === null ? `Created ${copy.singular} “${form.title.trim()}”.` : `Updated ${copy.singular}.`);
+      toast.success(
+        form.id === null
+          ? `Created ${copy.singular} “${form.title.trim()}”.`
+          : `Updated ${copy.singular}.`,
+      );
       setForm(null);
     } catch (error) {
       if (error instanceof ApiError) {
@@ -135,7 +161,15 @@ export default function ReferenceManagePage({ kind }: { kind: ReferenceKind }) {
         </div>
       ),
     },
-    ...(isLevel ? [{ header: 'Order', cell: (r: ReferenceDto) => (hasSortOrder(r) ? r.sortOrder : '—'), hideOnMobile: true }] : []),
+    ...(isLevel
+      ? [
+          {
+            header: 'Order',
+            cell: (r: ReferenceDto) => (hasSortOrder(r) ? r.sortOrder : '—'),
+            hideOnMobile: true,
+          },
+        ]
+      : []),
     { header: 'Tutorials', cell: (r) => r.tutorialCount, hideOnMobile: true },
     { header: 'Status', cell: (r) => <StatusBadge status={r.status} /> },
     {
@@ -143,10 +177,23 @@ export default function ReferenceManagePage({ kind }: { kind: ReferenceKind }) {
       className: 'text-right',
       cell: (r) => (
         <div className="flex justify-end gap-1">
-          <Button variant="ghost" size="sm" onClick={() => openForm(r)} aria-label={`Edit ${r.title}`} icon={<Pencil className="size-4" aria-hidden="true" />}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => openForm(r)}
+            aria-label={`Edit ${r.title}`}
+            icon={<Pencil className="size-4" aria-hidden="true" />}
+          >
             <span className="hidden sm:inline">Edit</span>
           </Button>
-          <Button variant="ghost" size="sm" className="text-danger-700 hover:bg-danger-50 hover:text-danger-700" onClick={() => setPendingDelete(r)} aria-label={`Delete ${r.title}`} icon={<Trash2 className="size-4" aria-hidden="true" />}>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-danger-700 hover:bg-danger-50 hover:text-danger-700"
+            onClick={() => setPendingDelete(r)}
+            aria-label={`Delete ${r.title}`}
+            icon={<Trash2 className="size-4" aria-hidden="true" />}
+          >
             <span className="hidden sm:inline">Delete</span>
           </Button>
         </div>
@@ -166,7 +213,11 @@ export default function ReferenceManagePage({ kind }: { kind: ReferenceKind }) {
         }
       />
       <div className="grid gap-4 rounded-[var(--radius-card)] bg-surface p-4 ring-1 ring-line sm:grid-cols-[2fr_1fr]">
-        <SearchBox label="Search by title" value={values.search} onChange={(v) => set({ search: v })} />
+        <SearchBox
+          label="Search by title"
+          value={values.search}
+          onChange={(v) => set({ search: v })}
+        />
         <Field label="Status">
           <Select value={values.status ?? ''} onChange={(e) => set({ status: e.target.value })}>
             <option value="">Any status</option>
@@ -181,11 +232,23 @@ export default function ReferenceManagePage({ kind }: { kind: ReferenceKind }) {
       ) : list.isError ? (
         <ErrorState error={list.error} onRetry={() => void list.refetch()} />
       ) : list.data.data.length === 0 ? (
-        <EmptyState title={`No ${copy.title.toLowerCase()} found`} action={<Button onClick={() => openForm()}>New {copy.singular}</Button>} />
+        <EmptyState
+          title={`No ${copy.title.toLowerCase()} found`}
+          action={<Button onClick={() => openForm()}>New {copy.singular}</Button>}
+        />
       ) : (
         <>
-          <DataTable caption={copy.title} busy={list.isPlaceholderData} rows={list.data.data} rowKey={(r) => r.id} columns={columns} />
-          <Pagination pagination={list.data.pagination} onPageChange={(page) => set({ page }, false)} />
+          <DataTable
+            caption={copy.title}
+            busy={list.isPlaceholderData}
+            rows={list.data.data}
+            rowKey={(r) => r.id}
+            columns={columns}
+          />
+          <Pagination
+            pagination={list.data.pagination}
+            onPageChange={(page) => set({ page }, false)}
+          />
         </>
       )}
 
@@ -200,19 +263,43 @@ export default function ReferenceManagePage({ kind }: { kind: ReferenceKind }) {
         {form && (
           <>
             {formError && (
-              <p role="alert" className="rounded-lg bg-danger-50 px-3 py-2 text-sm font-medium text-danger-700">
+              <p
+                role="alert"
+                className="rounded-lg bg-danger-50 px-3 py-2 text-sm font-medium text-danger-700"
+              >
                 {formError}
               </p>
             )}
             <Field label="Title" error={errors['title']} required>
-              <TextInput value={form.title} maxLength={100} autoFocus onChange={(e) => setForm({ ...form, title: e.target.value })} />
+              <TextInput
+                value={form.title}
+                maxLength={100}
+                autoFocus
+                onChange={(e) => setForm({ ...form, title: e.target.value })}
+              />
             </Field>
             <Field label="Description" error={errors['description']}>
-              <TextArea rows={3} value={form.description} maxLength={1000} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+              <TextArea
+                rows={3}
+                value={form.description}
+                maxLength={1000}
+                onChange={(e) => setForm({ ...form, description: e.target.value })}
+              />
             </Field>
             {isLevel && (
-              <Field label="Sort order" error={errors['sortOrder']} hint="Lower numbers are listed first.">
-                <TextInput type="number" inputMode="numeric" min={0} max={1000} value={form.sortOrder} onChange={(e) => setForm({ ...form, sortOrder: e.target.value })} />
+              <Field
+                label="Sort order"
+                error={errors['sortOrder']}
+                hint="Lower numbers are listed first."
+              >
+                <TextInput
+                  type="number"
+                  inputMode="numeric"
+                  min={0}
+                  max={1000}
+                  value={form.sortOrder}
+                  onChange={(e) => setForm({ ...form, sortOrder: e.target.value })}
+                />
               </Field>
             )}
             <RadioGroup<RecordStatus>
@@ -239,8 +326,9 @@ export default function ReferenceManagePage({ kind }: { kind: ReferenceKind }) {
       >
         {pendingDelete && pendingDelete.tutorialCount > 0 ? (
           <>
-            “{pendingDelete.title}” is used by {pluralize(pendingDelete.tutorialCount, 'tutorial')}, so it can’t be deleted. Reassign those
-            tutorials first, or edit it and set it to Inactive.
+            “{pendingDelete.title}” is used by {pluralize(pendingDelete.tutorialCount, 'tutorial')},
+            so it can’t be deleted. Reassign those tutorials first, or edit it and set it to
+            Inactive.
           </>
         ) : (
           <>“{pendingDelete?.title}” will be permanently deleted.</>

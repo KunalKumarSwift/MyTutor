@@ -12,14 +12,30 @@ const navClass = ({ isActive }: { isActive: boolean }) =>
 
 export function Brand({ className }: { className?: string }) {
   return (
-    <Link to="/" className={cn('inline-flex items-center gap-2 rounded-lg text-lg font-extrabold tracking-tight', className)}>
-      <span className="grid size-8 place-items-center rounded-lg bg-brand-700 text-white" aria-hidden="true">
+    <Link
+      to="/"
+      className={cn(
+        'inline-flex items-center gap-2 rounded-lg text-lg font-extrabold tracking-tight',
+        className,
+      )}
+    >
+      <span
+        className="grid size-8 place-items-center rounded-lg bg-brand-700 text-white"
+        aria-hidden="true"
+      >
         <svg viewBox="0 0 32 32" className="size-5">
-          <path d="M8 22V10l8 6 8-6v12" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+          <path
+            d="M8 22V10l8 6 8-6v12"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="3"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
         </svg>
       </span>
       <span>
-        My<span className="text-accent-600">Tutor</span>
+        My<span className="text-accent-700">Tutor</span>
       </span>
     </Link>
   );
@@ -77,16 +93,25 @@ export function PublicLayout() {
             onClick={() => setOpen((v) => !v)}
           >
             <span className="sr-only">{open ? 'Close menu' : 'Open menu'}</span>
-            {open ? <X className="size-5" aria-hidden="true" /> : <Menu className="size-5" aria-hidden="true" />}
+            {open ? (
+              <X className="size-5" aria-hidden="true" />
+            ) : (
+              <Menu className="size-5" aria-hidden="true" />
+            )}
           </button>
         </div>
         {open && (
-          <nav id="mobile-nav" aria-label="Main" className="flex flex-col gap-1 border-t border-line px-4 py-3 sm:hidden">
+          <nav
+            id="mobile-nav"
+            aria-label="Main"
+            className="flex flex-col gap-1 border-t border-line px-4 py-3 sm:hidden"
+          >
             {links}
           </nav>
         )}
       </header>
-      <main id="main" className="flex-1">
+      {/* At least one viewport tall so the footer never starts on screen and shifts when content loads. */}
+      <main id="main" className="min-h-[100svh] flex-1">
         <Outlet />
       </main>
       <footer className="border-t border-line bg-surface">

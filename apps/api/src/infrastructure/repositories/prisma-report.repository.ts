@@ -2,7 +2,11 @@ import type { Database } from '../database/prisma.js';
 import type { Prisma } from '../../generated/prisma/client.js';
 import type { Page, PageRequest } from '../../shared/http/pagination.js';
 import { toSkipTake } from '../../shared/http/pagination.js';
-import type { ReportRange, ReportRepository, TutorialReportRow } from '../../modules/reports/report.types.js';
+import type {
+  ReportRange,
+  ReportRepository,
+  TutorialReportRow,
+} from '../../modules/reports/report.types.js';
 
 export class PrismaReportRepository implements ReportRepository {
   constructor(private readonly db: Database) {}
@@ -10,7 +14,12 @@ export class PrismaReportRepository implements ReportRepository {
   async tutorialReport(range: ReportRange, page: PageRequest): Promise<Page<TutorialReportRow>> {
     const where: Prisma.TutorialWhereInput =
       range.from || range.to
-        ? { createdAt: { ...(range.from ? { gte: range.from } : {}), ...(range.to ? { lt: range.to } : {}) } }
+        ? {
+            createdAt: {
+              ...(range.from ? { gte: range.from } : {}),
+              ...(range.to ? { lt: range.to } : {}),
+            },
+          }
         : {};
     const [rows, totalItems] = await Promise.all([
       this.db.tutorial.findMany({

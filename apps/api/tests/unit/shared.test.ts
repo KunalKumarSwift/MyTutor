@@ -2,7 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { loadConfig } from '../../src/config/env.js';
 import { buildPagination, normalizePage } from '../../src/shared/http/pagination.js';
 import { cleanMultiline, excerpt, titleKey } from '../../src/shared/text.js';
-import { deriveCsrfToken, generateSessionToken, hashSessionToken, safeEqual } from '../../src/shared/security/tokens.js';
+import {
+  deriveCsrfToken,
+  generateSessionToken,
+  hashSessionToken,
+  safeEqual,
+} from '../../src/shared/security/tokens.js';
 import { ReportService } from '../../src/modules/reports/report.service.js';
 import { AuthorizationPolicy } from '../../src/modules/auth/authorization.policy.js';
 import { actor } from '../support/fakes.js';
@@ -11,20 +16,39 @@ const baseEnv = { DATABASE_URL: 'postgresql://x', SESSION_SECRET: 'a'.repeat(40)
 
 describe('loadConfig', () => {
   it('applies defaults and parses lists and booleans', () => {
-    const config = loadConfig({ ...baseEnv, ALLOWED_ORIGINS: 'http://a.test/, http://b.test', COOKIE_SECURE: 'true', PORT: '4000' });
-    expect(config).toMatchObject({ port: 4000, cookieSecure: true, sessionTtlSeconds: 28800, allowedOrigins: ['http://a.test', 'http://b.test'] });
+    const config = loadConfig({
+      ...baseEnv,
+      ALLOWED_ORIGINS: 'http://a.test/, http://b.test',
+      COOKIE_SECURE: 'true',
+      PORT: '4000',
+    });
+    expect(config).toMatchObject({
+      port: 4000,
+      cookieSecure: true,
+      sessionTtlSeconds: 28800,
+      allowedOrigins: ['http://a.test', 'http://b.test'],
+    });
   });
 
   it('fails fast on missing or invalid values', () => {
-    expect(() => loadConfig({ SESSION_SECRET: 'short' })).toThrow(/DATABASE_URL[\s\S]*SESSION_SECRET/);
+    expect(() => loadConfig({ SESSION_SECRET: 'short' })).toThrow(
+      /DATABASE_URL[\s\S]*SESSION_SECRET/,
+    );
   });
 
   it('enforces secure settings in production', () => {
     expect(() => loadConfig({ ...baseEnv, NODE_ENV: 'production' })).toThrow(/COOKIE_SECURE/);
     expect(() =>
-      loadConfig({ ...baseEnv, NODE_ENV: 'production', COOKIE_SECURE: 'true', SESSION_SECRET: 'replace-with-a-long-random-string-of-32' }),
+      loadConfig({
+        ...baseEnv,
+        NODE_ENV: 'production',
+        COOKIE_SECURE: 'true',
+        SESSION_SECRET: 'replace-with-a-long-random-string-of-32',
+      }),
     ).toThrow(/placeholder/);
-    expect(() => loadConfig({ ...baseEnv, NODE_ENV: 'production', COOKIE_SECURE: 'true' })).toThrow(/ALLOWED_ORIGINS/);
+    expect(() => loadConfig({ ...baseEnv, NODE_ENV: 'production', COOKIE_SECURE: 'true' })).toThrow(
+      /ALLOWED_ORIGINS/,
+    );
   });
 });
 
@@ -69,8 +93,13 @@ describe('ReportService', () => {
       { tutorialReport: async (range) => ((captured = range), { items: [], totalItems: 0 }) },
       new AuthorizationPolicy(),
     );
-    await expect(service.tutorialReport({ from: '2026-05-02', to: '2026-05-01' }, actor())).rejects.toMatchObject({ statusCode: 422 });
+    await expect(
+      service.tutorialReport({ from: '2026-05-02', to: '2026-05-01' }, actor()),
+    ).rejects.toMatchObject({ statusCode: 422 });
     await service.tutorialReport({ from: '2026-05-01', to: '2026-05-01' }, actor());
-    expect(captured).toEqual({ from: new Date('2026-05-01T00:00:00Z'), to: new Date('2026-05-02T00:00:00Z') });
+    expect(captured).toEqual({
+      from: new Date('2026-05-01T00:00:00Z'),
+      to: new Date('2026-05-02T00:00:00Z'),
+    });
   });
 });

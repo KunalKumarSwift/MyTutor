@@ -57,7 +57,12 @@ export class PrismaCategoryRepository implements ReferenceRepository {
   async list(filter: ReferenceListFilter, page: PageRequest): Promise<Page<ReferenceRecord>> {
     const where = listWhere(filter);
     const [rows, totalItems] = await Promise.all([
-      this.db.category.findMany({ where, include: withCount, orderBy: [{ title: 'asc' }], ...toSkipTake(page) }),
+      this.db.category.findMany({
+        where,
+        include: withCount,
+        orderBy: [{ title: 'asc' }],
+        ...toSkipTake(page),
+      }),
       this.db.category.count({ where }),
     ]);
     return { items: rows.map(toRecord), totalItems };
@@ -69,7 +74,9 @@ export class PrismaCategoryRepository implements ReferenceRepository {
       orderBy: { title: 'asc' },
       include: {
         _count: {
-          select: { tutorials: { where: { status: 'ACTIVE', difficultyLevel: { status: 'ACTIVE' } } } },
+          select: {
+            tutorials: { where: { status: 'ACTIVE', difficultyLevel: { status: 'ACTIVE' } } },
+          },
         },
       },
     });
@@ -94,7 +101,10 @@ export class PrismaCategoryRepository implements ReferenceRepository {
     }
   }
 
-  async update(id: number, { sortOrder: _sortOrder, ...data }: Partial<ReferenceWrite>): Promise<ReferenceRecord> {
+  async update(
+    id: number,
+    { sortOrder: _sortOrder, ...data }: Partial<ReferenceWrite>,
+  ): Promise<ReferenceRecord> {
     try {
       return toRecord(await this.db.category.update({ where: { id }, data, include: withCount }));
     } catch (error) {
@@ -123,7 +133,12 @@ export class PrismaDifficultyLevelRepository implements ReferenceRepository {
   async list(filter: ReferenceListFilter, page: PageRequest): Promise<Page<ReferenceRecord>> {
     const where = listWhere(filter);
     const [rows, totalItems] = await Promise.all([
-      this.db.difficultyLevel.findMany({ where, include: withCount, orderBy: this.order, ...toSkipTake(page) }),
+      this.db.difficultyLevel.findMany({
+        where,
+        include: withCount,
+        orderBy: this.order,
+        ...toSkipTake(page),
+      }),
       this.db.difficultyLevel.count({ where }),
     ]);
     return { items: rows.map(toRecord), totalItems };
@@ -134,7 +149,9 @@ export class PrismaDifficultyLevelRepository implements ReferenceRepository {
       where: { status: 'ACTIVE' },
       orderBy: this.order,
       include: {
-        _count: { select: { tutorials: { where: { status: 'ACTIVE', category: { status: 'ACTIVE' } } } } },
+        _count: {
+          select: { tutorials: { where: { status: 'ACTIVE', category: { status: 'ACTIVE' } } } },
+        },
       },
     });
     return rows.map(toPublic);
@@ -146,7 +163,10 @@ export class PrismaDifficultyLevelRepository implements ReferenceRepository {
   }
 
   async findByTitleKey(titleKey: string): Promise<ReferenceRecord | null> {
-    const row = await this.db.difficultyLevel.findUnique({ where: { titleKey }, include: withCount });
+    const row = await this.db.difficultyLevel.findUnique({
+      where: { titleKey },
+      include: withCount,
+    });
     return row ? toRecord(row) : null;
   }
 
@@ -160,7 +180,9 @@ export class PrismaDifficultyLevelRepository implements ReferenceRepository {
 
   async update(id: number, data: Partial<ReferenceWrite>): Promise<ReferenceRecord> {
     try {
-      return toRecord(await this.db.difficultyLevel.update({ where: { id }, data, include: withCount }));
+      return toRecord(
+        await this.db.difficultyLevel.update({ where: { id }, data, include: withCount }),
+      );
     } catch (error) {
       mapPrismaError(error, 'Difficulty level');
     }

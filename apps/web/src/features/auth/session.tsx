@@ -1,6 +1,13 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, type ReactNode } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { roleHasPermission, type DataResponse, type LoginInput, type Permission, type PrincipalDto, type SessionDto } from '@mytutor/contracts';
+import {
+  roleHasPermission,
+  type DataResponse,
+  type LoginInput,
+  type Permission,
+  type PrincipalDto,
+  type SessionDto,
+} from '@mytutor/contracts';
 import { apiRequest, setCsrfToken, setUnauthenticatedHandler } from '../../lib/api';
 
 export const SESSION_KEY = ['session'] as const;
@@ -16,7 +23,9 @@ interface SessionContextValue {
 const SessionContext = createContext<SessionContextValue | null>(null);
 
 async function fetchSession(): Promise<SessionDto | null> {
-  const res = await apiRequest<DataResponse<SessionDto | null>>('/auth/session', { silentAuth: true });
+  const res = await apiRequest<DataResponse<SessionDto | null>>('/auth/session', {
+    silentAuth: true,
+  });
   return res.data;
 }
 
@@ -26,7 +35,12 @@ async function fetchSession(): Promise<SessionDto | null> {
  */
 export function SessionProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
-  const query = useQuery({ queryKey: SESSION_KEY, queryFn: fetchSession, staleTime: 5 * 60_000, retry: false });
+  const query = useQuery({
+    queryKey: SESSION_KEY,
+    queryFn: fetchSession,
+    staleTime: 5 * 60_000,
+    retry: false,
+  });
   const session = query.data ?? null;
 
   useEffect(() => {
@@ -47,7 +61,11 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(
     async (input: LoginInput) => {
-      const res = await apiRequest<DataResponse<SessionDto>>('/auth/login', { method: 'POST', body: input, silentAuth: true });
+      const res = await apiRequest<DataResponse<SessionDto>>('/auth/login', {
+        method: 'POST',
+        body: input,
+        silentAuth: true,
+      });
       setCsrfToken(res.data.csrfToken);
       queryClient.setQueryData(SESSION_KEY, res.data);
       return res.data.user;

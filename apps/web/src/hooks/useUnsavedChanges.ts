@@ -6,7 +6,10 @@ import { useBlocker } from 'react-router';
  * to drive a confirm dialog) and tab close/reload (native browser prompt).
  */
 export function useUnsavedChanges(dirty: boolean) {
-  const blocker = useBlocker(({ currentLocation, nextLocation }) => dirty && currentLocation.pathname !== nextLocation.pathname);
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) =>
+      dirty && currentLocation.pathname !== nextLocation.pathname,
+  );
 
   useEffect(() => {
     if (!dirty) return;

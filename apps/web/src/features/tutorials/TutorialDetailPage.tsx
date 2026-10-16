@@ -12,14 +12,27 @@ export default function TutorialDetailPage() {
   const tutorial = usePublicTutorial(id);
   useDocumentTitle(tutorial.data?.title ?? 'Tutorial');
 
-  const related = usePublicTutorials({ categoryId: tutorial.data?.category.id, pageSize: 4 });
-  const relatedItems = tutorial.data ? (related.data?.data ?? []).filter((t) => t.id !== id).slice(0, 3) : [];
+  const categoryId = tutorial.data?.category.id;
+  // Wait for the category, and never show another query's results as "related" (avoids a layout shift).
+  const related = usePublicTutorials(
+    { categoryId, pageSize: 4 },
+    { enabled: categoryId !== undefined, keepPrevious: false },
+  );
+  const relatedItems = tutorial.data
+    ? (related.data?.data ?? []).filter((t) => t.id !== id).slice(0, 3)
+    : [];
 
-  const notFound = !Number.isInteger(id) || id <= 0 || (tutorial.error instanceof ApiError && tutorial.error.status === 404);
+  const notFound =
+    !Number.isInteger(id) ||
+    id <= 0 ||
+    (tutorial.error instanceof ApiError && tutorial.error.status === 404);
 
   return (
     <div className="mx-auto max-w-[var(--container-page)] px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
-      <Link to="/tutorials" className="inline-flex items-center gap-1.5 rounded text-sm font-semibold text-brand-700 hover:text-brand-900">
+      <Link
+        to="/tutorials"
+        className="inline-flex items-center gap-1.5 rounded text-sm font-semibold text-brand-700 hover:text-brand-900"
+      >
         <ArrowLeft className="size-4" aria-hidden="true" />
         Back to tutorials
       </Link>
@@ -42,28 +55,43 @@ export default function TutorialDetailPage() {
             {tutorial.data ? (
               <>
                 <div className="flex flex-wrap gap-2">
-                  <Link to={`/tutorials?category=${tutorial.data.category.id}`} className="rounded-full">
+                  <Link
+                    to={`/tutorials?category=${tutorial.data.category.id}`}
+                    className="rounded-full"
+                  >
                     <Badge tone="brand">{tutorial.data.category.title}</Badge>
                   </Link>
-                  <Link to={`/tutorials?level=${tutorial.data.difficultyLevel.id}`} className="rounded-full">
+                  <Link
+                    to={`/tutorials?level=${tutorial.data.difficultyLevel.id}`}
+                    className="rounded-full"
+                  >
                     <Badge tone="accent">{tutorial.data.difficultyLevel.title}</Badge>
                   </Link>
                 </div>
-                <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-balance sm:text-4xl">{tutorial.data.title}</h1>
+                <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-balance sm:text-4xl">
+                  {tutorial.data.title}
+                </h1>
                 <dl className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-sm text-ink-muted">
                   <div className="flex items-center gap-1.5">
                     <CalendarDays className="size-4" aria-hidden="true" />
                     <dt className="sr-only">Published</dt>
                     <dd>
-                      Published <time dateTime={tutorial.data.createdAt}>{formatDate(tutorial.data.createdAt)}</time>
+                      Published{' '}
+                      <time dateTime={tutorial.data.createdAt}>
+                        {formatDate(tutorial.data.createdAt)}
+                      </time>
                     </dd>
                   </div>
-                  {tutorial.data.updatedAt.slice(0, 10) !== tutorial.data.createdAt.slice(0, 10) && (
+                  {tutorial.data.updatedAt.slice(0, 10) !==
+                    tutorial.data.createdAt.slice(0, 10) && (
                     <div className="flex items-center gap-1.5">
                       <RefreshCw className="size-4" aria-hidden="true" />
                       <dt className="sr-only">Updated</dt>
                       <dd>
-                        Updated <time dateTime={tutorial.data.updatedAt}>{formatDate(tutorial.data.updatedAt)}</time>
+                        Updated{' '}
+                        <time dateTime={tutorial.data.updatedAt}>
+                          {formatDate(tutorial.data.updatedAt)}
+                        </time>
                       </dd>
                     </div>
                   )}

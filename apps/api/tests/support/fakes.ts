@@ -1,5 +1,9 @@
 /** In-memory implementations of repository interfaces for fast, isolated unit tests. */
-import type { AuditEventRecord, AuditRepository, NewAuditEvent } from '../../src/modules/audit/audit.types.js';
+import type {
+  AuditEventRecord,
+  AuditRepository,
+  NewAuditEvent,
+} from '../../src/modules/audit/audit.types.js';
 import type { Clock, SessionRecord, SessionRepository } from '../../src/modules/auth/auth.types.js';
 import type { AuthenticatedActor } from '../../src/modules/auth/auth.types.js';
 import type {
@@ -16,7 +20,13 @@ import type {
   TutorialRepository,
   TutorialWrite,
 } from '../../src/modules/tutorials/tutorial.types.js';
-import type { NewUser, UserListFilter, UserPatch, UserRecord, UserRepository } from '../../src/modules/users/user.types.js';
+import type {
+  NewUser,
+  UserListFilter,
+  UserPatch,
+  UserRecord,
+  UserRepository,
+} from '../../src/modules/users/user.types.js';
 import type { Page, PageRequest } from '../../src/shared/http/pagination.js';
 import type { PasswordHasher } from '../../src/shared/security/password-hasher.js';
 
@@ -77,7 +87,10 @@ export class InMemoryUserRepository implements UserRepository {
   }
   async list(filter: UserListFilter, page: PageRequest) {
     const s = filter.search?.toLowerCase();
-    return paginate(this.users.filter((u) => !s || u.name.toLowerCase().includes(s)), page);
+    return paginate(
+      this.users.filter((u) => !s || u.name.toLowerCase().includes(s)),
+      page,
+    );
   }
   async create(user: NewUser) {
     return this.seed(user);
@@ -168,7 +181,11 @@ export class InMemoryReferenceRepository implements ReferenceRepository {
   async list(filter: ReferenceListFilter, page: PageRequest) {
     return paginate(
       this.records
-        .filter((r) => (!filter.status || r.status === filter.status) && (!filter.search || r.title.includes(filter.search)))
+        .filter(
+          (r) =>
+            (!filter.status || r.status === filter.status) &&
+            (!filter.search || r.title.includes(filter.search)),
+        )
         .map((r) => this.withCount(r)),
       page,
     );
@@ -176,7 +193,13 @@ export class InMemoryReferenceRepository implements ReferenceRepository {
   async listActive(): Promise<PublicReferenceRecord[]> {
     return this.records
       .filter((r) => r.status === 'ACTIVE')
-      .map((r) => ({ id: r.id, title: r.title, description: r.description, sortOrder: r.sortOrder, publicTutorialCount: 0 }));
+      .map((r) => ({
+        id: r.id,
+        title: r.title,
+        description: r.description,
+        sortOrder: r.sortOrder,
+        publicTutorialCount: 0,
+      }));
   }
   async findById(id: number) {
     const r = this.records.find((x) => x.id === id);
@@ -215,7 +238,11 @@ export class InMemoryTutorialRepository implements TutorialRepository {
     private readonly users: InMemoryUserRepository,
   ) {}
 
-  private hydrate(data: TutorialWrite & { authorId: number }, id: number, createdAt: Date): TutorialRecord {
+  private hydrate(
+    data: TutorialWrite & { authorId: number },
+    id: number,
+    createdAt: Date,
+  ): TutorialRecord {
     const c = this.categories.records.find((x) => x.id === data.categoryId)!;
     const l = this.levels.records.find((x) => x.id === data.difficultyLevelId)!;
     const a = this.users.users.find((x) => x.id === data.authorId)!;
@@ -233,7 +260,11 @@ export class InMemoryTutorialRepository implements TutorialRepository {
     };
   }
   private isPublic(t: TutorialRecord) {
-    return t.status === 'ACTIVE' && t.category.status === 'ACTIVE' && t.difficultyLevel.status === 'ACTIVE';
+    return (
+      t.status === 'ACTIVE' &&
+      t.category.status === 'ACTIVE' &&
+      t.difficultyLevel.status === 'ACTIVE'
+    );
   }
   private matches(t: TutorialRecord, f: TutorialFilter) {
     return (
@@ -244,14 +275,20 @@ export class InMemoryTutorialRepository implements TutorialRepository {
     );
   }
   async listPublic(filter: TutorialFilter, _sort: string, page: PageRequest) {
-    return paginate(this.tutorials.filter((t) => this.isPublic(t) && this.matches(t, filter)), page);
+    return paginate(
+      this.tutorials.filter((t) => this.isPublic(t) && this.matches(t, filter)),
+      page,
+    );
   }
   async findPublicById(id: number) {
     const t = this.tutorials.find((x) => x.id === id);
     return t && this.isPublic(t) ? t : null;
   }
   async list(filter: TutorialFilter, _sort: string, page: PageRequest) {
-    return paginate(this.tutorials.filter((t) => this.matches(t, filter)), page);
+    return paginate(
+      this.tutorials.filter((t) => this.matches(t, filter)),
+      page,
+    );
   }
   async findById(id: number) {
     return this.tutorials.find((x) => x.id === id) ?? null;
@@ -264,12 +301,14 @@ export class InMemoryTutorialRepository implements TutorialRepository {
   async update(id: number, data: Partial<TutorialWrite>, expectedUpdatedAt?: Date) {
     const index = this.tutorials.findIndex((x) => x.id === id);
     const current = this.tutorials[index]!;
-    if (expectedUpdatedAt && expectedUpdatedAt.getTime() !== current.updatedAt.getTime()) return null;
+    if (expectedUpdatedAt && expectedUpdatedAt.getTime() !== current.updatedAt.getTime())
+      return null;
     const merged = this.hydrate(
       {
         title: data.title ?? current.title,
         description: data.description ?? current.description,
-        prerequisites: data.prerequisites !== undefined ? data.prerequisites : current.prerequisites,
+        prerequisites:
+          data.prerequisites !== undefined ? data.prerequisites : current.prerequisites,
         status: data.status ?? current.status,
         categoryId: data.categoryId ?? current.category.id,
         difficultyLevelId: data.difficultyLevelId ?? current.difficultyLevel.id,
@@ -294,5 +333,12 @@ export class InMemoryTutorialRepository implements TutorialRepository {
 export const silentLogger = { error: () => undefined };
 
 export function actor(overrides: Partial<AuthenticatedActor> = {}): AuthenticatedActor {
-  return { userId: 1, username: 'admin', name: 'Admin', role: 'ADMIN', sessionId: 's-current', ...overrides };
+  return {
+    userId: 1,
+    username: 'admin',
+    name: 'Admin',
+    role: 'ADMIN',
+    sessionId: 's-current',
+    ...overrides,
+  };
 }

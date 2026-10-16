@@ -2,8 +2,21 @@ import { Type } from '@sinclair/typebox';
 import { GENDERS } from '@mytutor/contracts';
 import { actorOf } from '../../plugins/auth.plugin.js';
 import type { RoutePlugin } from '../../routes/types.js';
-import { errorResponses, Paginated, ProfileSchema, UserSchema } from '../../shared/http/dto-schemas.js';
-import { DataEnvelope, IdParams, Nullable, PageQuery, RequiredText, SearchText, StatusSchema } from '../../shared/http/schemas.js';
+import {
+  errorResponses,
+  Paginated,
+  ProfileSchema,
+  UserSchema,
+} from '../../shared/http/dto-schemas.js';
+import {
+  DataEnvelope,
+  IdParams,
+  Nullable,
+  PageQuery,
+  RequiredText,
+  SearchText,
+  StatusSchema,
+} from '../../shared/http/schemas.js';
 import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from '../../shared/security/password-hasher.js';
 
 const Gender = Type.Union(GENDERS.map((g) => Type.Literal(g)));
@@ -15,7 +28,9 @@ const profileFields = {
   dateOfBirth: Type.Optional(Nullable(Type.String({ format: 'date' }))),
   gender: Type.Optional(Nullable(Gender)),
   address: Type.Optional(Nullable(Type.String({ maxLength: 300 }))),
-  mobile: Type.Optional(Nullable(Type.String({ maxLength: 20, pattern: '^$|^\\+?[0-9 ()-]{6,20}$' }))),
+  mobile: Type.Optional(
+    Nullable(Type.String({ maxLength: 20, pattern: '^$|^\\+?[0-9 ()-]{6,20}$' })),
+  ),
 };
 
 const ProfileBody = Type.Object(profileFields, { additionalProperties: false });
@@ -44,33 +59,62 @@ const UpdateUserBody = Type.Object(
   { additionalProperties: false, minProperties: 1 },
 );
 
-const ListQuery = Type.Object({ search: Type.Optional(SearchText), ...PageQuery }, { additionalProperties: false });
+const ListQuery = Type.Object(
+  { search: Type.Optional(SearchText), ...PageQuery },
+  { additionalProperties: false },
+);
 
 export const adminUserRoutes: RoutePlugin = async (app, { container }) => {
   const preHandler = app.requirePermission('users:manage');
 
   app.get(
     '/users',
-    { preHandler, schema: { querystring: ListQuery, response: { 200: Paginated(UserSchema), ...errorResponses } } },
+    {
+      preHandler,
+      schema: {
+        querystring: ListQuery,
+        response: { 200: Paginated(UserSchema), ...errorResponses },
+      },
+    },
     async (request) => container.users.listUsers(request.query, actorOf(request)),
   );
   app.get(
     '/users/:id',
-    { preHandler, schema: { params: IdParams, response: { 200: DataEnvelope(UserSchema), ...errorResponses } } },
-    async (request) => ({ data: await container.users.getUser(request.params.id, actorOf(request)) }),
+    {
+      preHandler,
+      schema: { params: IdParams, response: { 200: DataEnvelope(UserSchema), ...errorResponses } },
+    },
+    async (request) => ({
+      data: await container.users.getUser(request.params.id, actorOf(request)),
+    }),
   );
   app.post(
     '/users',
-    { preHandler, schema: { body: CreateUserBody, response: { 201: DataEnvelope(UserSchema), ...errorResponses } } },
-    async (request, reply) => reply.status(201).send({ data: await container.users.createUser(request.body, actorOf(request)) }),
+    {
+      preHandler,
+      schema: {
+        body: CreateUserBody,
+        response: { 201: DataEnvelope(UserSchema), ...errorResponses },
+      },
+    },
+    async (request, reply) =>
+      reply
+        .status(201)
+        .send({ data: await container.users.createUser(request.body, actorOf(request)) }),
   );
   app.patch(
     '/users/:id',
     {
       preHandler,
-      schema: { params: IdParams, body: UpdateUserBody, response: { 200: DataEnvelope(UserSchema), ...errorResponses } },
+      schema: {
+        params: IdParams,
+        body: UpdateUserBody,
+        response: { 200: DataEnvelope(UserSchema), ...errorResponses },
+      },
     },
-    async (request) => ({ data: await container.users.updateUser(request.params.id, request.body, actorOf(request)) }),
+    async (request) => ({
+      data: await container.users.updateUser(request.params.id, request.body, actorOf(request)),
+    }),
   );
 };
 
@@ -84,7 +128,15 @@ export const profileRoutes: RoutePlugin = async (app, { container }) => {
   );
   app.put(
     '/profile',
-    { preHandler, schema: { body: ProfileBody, response: { 200: DataEnvelope(ProfileSchema), ...errorResponses } } },
-    async (request) => ({ data: await container.users.updateProfile(request.body, actorOf(request)) }),
+    {
+      preHandler,
+      schema: {
+        body: ProfileBody,
+        response: { 200: DataEnvelope(ProfileSchema), ...errorResponses },
+      },
+    },
+    async (request) => ({
+      data: await container.users.updateProfile(request.body, actorOf(request)),
+    }),
   );
 };
