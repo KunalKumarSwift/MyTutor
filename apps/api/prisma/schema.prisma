@@ -1,0 +1,145 @@
+// MyTutor database schema.
+// Derived from the legacy MySQL tables tbluser, tblcategory, tbldifficultylevel and tbltutorial.
+// See docs/database.md for the legacy → modern column mapping.
+
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "js"
+}
+
+// The connection URL is supplied by prisma.config.ts (CLI) and the pg driver adapter (runtime).
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  OPERATOR
+}
+
+enum RecordStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+/// Legacy: tbluser. `username` is the legacy login "User Id" (usrId).
+model User {
+  id           Int          @id @default(autoincrement())
+  /// Stored lower-cased; unique login identifier.
+  username     String       @unique @db.VarChar(50)
+  passwordHash String       @db.VarChar(255)
+  role         Role         @default(OPERATOR)
+  status       RecordStatus @default(ACTIVE)
+  name         String       @db.VarChar(100)
+  email        String?      @db.VarChar(254)
+  dateOfBirth  DateTime?    @db.Date
+  gender       Gender?
+  address      String?      @db.VarChar(300)
+  mobile       String?      @db.VarChar(20)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  sessions    Session[]
+  tutorials   Tutorial[]
+  auditEvents AuditEvent[]
+
+  @@index([name])
+  @@map("users")
+}
+
+/// Opaque server-side sessions. Only a SHA-256 hash of the cookie token is stored.
+model Session {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     Int
+  tokenHash  String   @unique @db.Char(64)
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  lastSeenAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+/// Legacy: tblcategory.
+model Category {
+  id          Int          @id @default(autoincrement())
+  title       String       @db.VarChar(100)
+  /// Lower-cased, whitespace-collapsed title used for case-insensitive uniqueness.
+  titleKey    String       @unique @db.VarChar(100)
+  description String?      @db.VarChar(1000)
+  status      RecordStatus @default(ACTIVE)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  tutorials Tutorial[]
+
+  @@map("categories")
+}
+
+/// Legacy: tbldifficultylevel. `sortOrder` is a modernization so levels list Beginner → Advanced.
+model DifficultyLevel {
+  id          Int          @id @default(autoincrement())
+  title       String       @db.VarChar(100)
+  titleKey    String       @unique @db.VarChar(100)
+  description String?      @db.VarChar(1000)
+  sortOrder   Int          @default(0)
+  status      RecordStatus @default(ACTIVE)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  tutorials Tutorial[]
+
+  @@index([sortOrder])
+  @@map("difficulty_levels")
+}
+
+/// Legacy: tbltutorial. `createdAt` is tutorialCreateDate; `authorId` is usrId.
+model Tutorial {
+  id                Int          @id @default(autoincrement())
+  title             String       @db.VarChar(200)
+  description       String       @db.Text
+  prerequisites     String?      @db.VarChar(2000)
+  status            RecordStatus @default(ACTIVE)
+  categoryId        Int
+  difficultyLevelId Int
+  authorId          Int
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  category        Category        @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  difficultyLevel DifficultyLevel @relation(fields: [difficultyLevelId], references: [id], onDelete: Restrict)
+  author          User            @relation(fields: [authorId], references: [id], onDelete: Restrict)
+
+  @@index([status, createdAt])
+  @@index([categoryId])
+  @@index([difficultyLevelId])
+  @@index([authorId])
+  @@index([createdAt])
+  @@map("tutorials")
+}
+
+/// Modernization: record of administrative changes. Never stores secrets.
+model AuditEvent {
+  id         Int      @id @default(autoincrement())
+  actorId    Int?
+  action     String   @db.VarChar(50)
+  entityType String   @db.VarChar(50)
+  entityId   String   @db.VarChar(50)
+  summary    String   @db.VarChar(300)
+  createdAt  DateTime @default(now())
+
+  actor User? @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@map("audit_events")
+}
