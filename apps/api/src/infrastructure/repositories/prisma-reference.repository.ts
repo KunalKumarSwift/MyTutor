@@ -56,7 +56,7 @@ export class PrismaCategoryRepository implements ReferenceRepository {
 
   async list(filter: ReferenceListFilter, page: PageRequest): Promise<Page<ReferenceRecord>> {
     const where = listWhere(filter);
-    const [rows, totalItems] = await this.db.$transaction([
+    const [rows, totalItems] = await Promise.all([
       this.db.category.findMany({ where, include: withCount, orderBy: [{ title: 'asc' }], ...toSkipTake(page) }),
       this.db.category.count({ where }),
     ]);
@@ -122,7 +122,7 @@ export class PrismaDifficultyLevelRepository implements ReferenceRepository {
 
   async list(filter: ReferenceListFilter, page: PageRequest): Promise<Page<ReferenceRecord>> {
     const where = listWhere(filter);
-    const [rows, totalItems] = await this.db.$transaction([
+    const [rows, totalItems] = await Promise.all([
       this.db.difficultyLevel.findMany({ where, include: withCount, orderBy: this.order, ...toSkipTake(page) }),
       this.db.difficultyLevel.count({ where }),
     ]);

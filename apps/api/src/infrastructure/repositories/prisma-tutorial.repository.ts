@@ -128,7 +128,7 @@ export class PrismaTutorialRepository implements TutorialRepository {
   }
 
   private async page(where: Prisma.TutorialWhereInput, sort: TutorialSort, page: PageRequest): Promise<Page<TutorialRecord>> {
-    const [rows, totalItems] = await this.db.$transaction([
+    const [rows, totalItems] = await Promise.all([
       this.db.tutorial.findMany({ where, include, orderBy: toOrderBy(sort), ...toSkipTake(page) }),
       this.db.tutorial.count({ where }),
     ]);

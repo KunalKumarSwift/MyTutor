@@ -34,7 +34,7 @@ export class PrismaUserRepository implements UserRepository {
           ],
         }
       : {};
-    const [items, totalItems] = await this.db.$transaction([
+    const [items, totalItems] = await Promise.all([
       this.db.user.findMany({ where, orderBy: [{ name: 'asc' }, { id: 'asc' }], ...toSkipTake(page) }),
       this.db.user.count({ where }),
     ]);

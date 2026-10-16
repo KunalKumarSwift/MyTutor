@@ -146,6 +146,9 @@ export const DashboardSchema = Type.Object({
   recentActivity: Type.Array(AuditEventSchema),
 });
 
+/** 204 responses carry no body. */
+export const noContent = { 204: Type.Null() } as const;
+
 /** Standard error responses attached to every route for documentation and serialization. */
 export const errorResponses = {
   400: ErrorSchema,

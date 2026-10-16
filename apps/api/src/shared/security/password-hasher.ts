@@ -1,4 +1,7 @@
-import { hash, verify, Algorithm } from '@node-rs/argon2';
+import { hash, verify, type Algorithm } from '@node-rs/argon2';
+
+/** Value of the library's (ambient const) `Algorithm.Argon2id`. */
+const ARGON2ID = 2 as Algorithm;
 
 export interface PasswordHasher {
   hash(password: string): Promise<string>;
@@ -11,7 +14,7 @@ export interface PasswordHasher {
  */
 export class Argon2PasswordHasher implements PasswordHasher {
   private readonly options = {
-    algorithm: Algorithm.Argon2id,
+    algorithm: ARGON2ID,
     memoryCost: 19_456,
     timeCost: 2,
     parallelism: 1,

@@ -12,7 +12,7 @@ export class PrismaReportRepository implements ReportRepository {
       range.from || range.to
         ? { createdAt: { ...(range.from ? { gte: range.from } : {}), ...(range.to ? { lt: range.to } : {}) } }
         : {};
-    const [rows, totalItems] = await this.db.$transaction([
+    const [rows, totalItems] = await Promise.all([
       this.db.tutorial.findMany({
         where,
         orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
